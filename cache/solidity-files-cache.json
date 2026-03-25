@@ -1,0 +1,41 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/carlmitchell/Development/blockchaindev/cse540team3/contracts/GovernmentSuppyChain.sol": {
+      "lastModificationDate": 1774465736033,
+      "contentHash": "d283669a443326fbe98cc43e0214f2bc",
+      "sourceName": "contracts/GovernmentSuppyChain.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.28"
+      ],
+      "artifacts": [
+        "GovernmentSupplyChain"
+      ]
+    }
+  }
+}
