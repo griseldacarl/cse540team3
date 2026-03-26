@@ -15,7 +15,6 @@ The chosen platform will be Ethereum blockchain with a tech stack of Hardhat, Me
 
 
 ![Screenshot](./Screenshots/Architecture.png)
-## Dependencies
 
 ## Dependencies
  
