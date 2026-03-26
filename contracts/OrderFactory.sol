@@ -30,6 +30,6 @@ contract OrderFactory {
     // Return all orders
     // This can be broken into several getter functions for the sake of gas cost.  I.e GetOrdersByBusiness, GetOutstandingOrders, etc
     function getAllOrders() public view returns (address[] memory) {
-
+        return orderContracts;
     }
 }

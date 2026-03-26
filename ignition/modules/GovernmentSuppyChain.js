@@ -5,9 +5,11 @@ const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
 
 module.exports = buildModule("GovernmentSupplyChainModule", (m) => {
-  const governmentSupplyChain = m.contract("GovernmentSupplyChain",[]);
+  const businessRegistry = m.contract("BusinessRegistry");
+  const orderFactory = m.contract("OrderFactory", [businessRegistry]);
 
-  return { governmentSupplyChain };
+
+  return { businessRegistry, orderFactory };
 });
 
   
