@@ -29,3 +29,19 @@ yarn-error.log*
 artifacts/
 cache/
 ignition/deployments/
+
+# VS Code
+.vscode/
+.history/
+*.code-workspace
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code settings
+.vscode/
+.vscode-test/
