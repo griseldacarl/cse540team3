@@ -18,80 +18,53 @@ The chosen platform will be Ethereum blockchain with a tech stack of Hardhat, Me
 
 ## Dependencies
  
-| Package | Version |
-|---------|---------|
-| Node.js | v18+ |
-| React | 19 |
-| Ethers | v6 |
-| Dotenv | latest |
-| Hardhat | 2.x |
+## Dependencies
 
-## Initial Setup for Development
+| Package     | Version             |
+|------------|-------------------|
+| Node.js    | v18+               |
+| React      | 19.x               |
+| Ethers     | v6.x               |
+| Dotenv     | latest             |
+| Hardhat    | 2.x                |
+| Express    | 4.x (backend)      |
+| MySQL2     | 3.x (backend)      |
+| Nodemon    | 3.x (backend dev)  |
+| Concurrently | 9.x (root dev)   |
 
-* Create Directory 
+## Run directions
+## Scripts & Run Directions
 
-    ```bash
-    mkdir hardhat005
-    ```
+From the **root folder**, you can run:
 
-* Create React Project in new Directory
+```bash
+# Install all dependencies for frontend and backend
+npm run install-all
 
-    ```bash
-    npx create-react-app
-    ```
+# Start both backend and frontend concurrently
+npm run start-all
 
-* Initialize HardHat (select older version, say yes to all other prompts)
+# Full dev workflow (install + start)
+npm run dev
 
-    ```bash
-    npc hardhat —init
-    ```
+# Quick dev (start without reinstalling dependencies)
+npm run quick-dev
 
-* Edit Contracts and ignition as desired
+# Deploy smart contracts to local blockchain
+npm run deploy
 
-    Example: https://www.youtube.com/watch?v=QbNyn184smQ
+# Start backend only
+cd src/backend
+npm run dev
 
-* Setup hardhat.js for locathost
+# Start frontend only
+cd src/frontend
+npm start
+```
 
-    ```javascript
-    require("@nomicfoundation/hardhat-toolbox");
-
-    /** @type import('hardhat/config').HardhatUserConfig */
-    module.exports = {
-    solidity: "0.8.28",
-    networks: {
-        hardhat: {
-        chainId: 1337,
-        },
-    },
-    };
-    ```
-
-* Compile and run hardhat
-
-    ```bash
-    npx hardhat compile
-    npx hardhat node
-    ```
-
-* Setup MetaMax to use custom network matching your local config
-
-    ![Screenshot](./Screenshots/Hardhat_Metamask_network.png)
-
-* Deploy to Local network
-    ```bash
-    npx hardhat  ignition deploy ./ignition/*** --network localhost --reset
-    ```
-
-* Import Wallet and setup fake ether developer account 
-
-    ![Screenshot](./Screenshots/Import.png)
-
-* Start React
-    ```bash
-    npm run start
-    ```
 ## Authors
 
 - [@griseldacarl](https://www.github.com/griseldacarl)
 - [@craig653](https://www.github.com/craig653)
+- [@mpeter56](https://www.github.com/mpeter56)
 
