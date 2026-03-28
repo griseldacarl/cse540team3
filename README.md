@@ -6,7 +6,7 @@ The aim of this project is to create a blockchain based system that utilizes sma
 
 ## Architecture
 
-The chosen platform will be Ethereum blockchain with a tech stack of Hardhat, MetaMask, Ether.js, and React.js. Three main stakeholders exist in this project, the government, businesses and the public. Contracts will be organized in a Smart contract Factory. Contracts can be created by the government and read by the public. Contractors/Vendors can register wallets to a database and be assigned contracts via the government.
+The chosen platform will be Ethereum blockchain with a tech stack of Hardhat, MetaMask, Ether.js, and React.js. Three main stakeholders exist in this project, the government, businesses and the public. Contracts will be organized in a Smart Contract Factory. Contracts can be created by the government and read by the public. Contractors/Vendors can register wallets to a database and be assigned contracts via the government.
 
 
 ![Screenshot](./Screenshots/Architecture.png)
@@ -30,7 +30,7 @@ The chosen platform will be Ethereum blockchain with a tech stack of Hardhat, Me
 From the **root folder**, you can run:
 
 ```bash
-#Setup ENV File
+# Setup ENV File
 cp src/backend/env_template src/backend/.env
 
 # Install all dependencies for frontend and backend
