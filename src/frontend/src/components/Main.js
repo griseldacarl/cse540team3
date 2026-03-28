@@ -3,6 +3,13 @@ import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
 import { ethers } from "ethers";
 
+/*
+ * This component is the main frontend for the Government Supply Chain app.
+ * It connects to MetaMask, reads order data from the deployed smart contract,
+ * tests the backend database connection, and displays both blockchain-based
+ * order information and database-stored business records in one interface.
+ */
+
 function Main() {
   const [walletAddress, setWalletAddress] = useState("");
   const [orderAddresses, setOrderAddresses] = useState([]);
@@ -11,6 +18,11 @@ function Main() {
   const [businessData, setBusinessData] = useState(null);
   const [dbStatus, setDbStatus] = useState("");
 
+  /*
+   * The database helper exercises the backend API and updates the UI with either the returned
+   * business records or an error state. This gives the page a quick connectivity check for the
+   * MySQL-backed portion of the project without mixing that logic into the blockchain flow.
+   */
   // This loads the businesses from the database
   const loadBusinesses = async () => {
     try {
@@ -29,6 +41,11 @@ function Main() {
     }
   };
 
+  /*
+   * The wallet-and-orders helper drives the blockchain side of the app. 
+   * It connects the user's wallet, checks the currently selected network and then reads the
+   * list of order contract addresses so the UI can present the on-chain order state.
+   */
   const connectAndLoadOrders = async () => {
     console.log("window.ethereum =", window.ethereum);
 
@@ -121,6 +138,10 @@ function Main() {
     }
   };
 
+  /*
+   * The rendered layout groups the app into three user-facing views: connection status,
+   * blockchain and backend metadata, and the discovered order list.
+   */
   return (
     <div style={styles.container}>
       <h1>Government Supply Chain App</h1>

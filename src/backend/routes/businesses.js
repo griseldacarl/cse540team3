@@ -4,6 +4,13 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
+/*
+ * This router is the backend's business-data API surface. It provides a read path for the
+ * frontend to list stored businesses and a write path for creating new business records in
+ * MySQL, acting as the boundary between HTTP requests and the persistence layer for business
+ * registration data.
+ */
+
 // GET all businesses
 router.get("/", async (req, res) => {
   try {
