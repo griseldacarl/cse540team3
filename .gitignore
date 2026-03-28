@@ -1,4 +1,4 @@
-﻿# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules
@@ -30,7 +30,18 @@ artifacts/
 cache/
 ignition/deployments/
 
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
+# VS Code
+.vscode/
+.history/
+*.code-workspace
+
+# Visual Studio
 .vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code settings
+.vscode/
+.vscode-test/

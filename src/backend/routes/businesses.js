@@ -1,3 +1,5 @@
+// This file is api to allow the front end to add new businesses
+// and get all businesses from the business database.
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
