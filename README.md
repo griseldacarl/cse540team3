@@ -31,7 +31,7 @@ From the **root folder**, you can run:
 
 ```bash
 #Setup ENV File
-cp src/backend/env_tempalte src/backend/.env
+cp src/backend/env_template src/backend/.env
 
 # Install all dependencies for frontend and backend
 npm run install-all
