@@ -8,20 +8,31 @@ function Main() {
   const [orderAddresses, setOrderAddresses] = useState([]);
   const [statusMessage, setStatusMessage] = useState("Not connected");
   const [networkInfo, setNetworkInfo] = useState("");
+  const [businessData, setBusinessData] = useState(null);
+  const [dbStatus, setDbStatus] = useState("");
 
+  // This loads the businesses from the database
   const loadBusinesses = async () => {
     try {
+      setDbStatus("Checking database...");
       const response = await fetch("http://localhost:5000/api/businesses");
+      console.log("Response from database: ", response);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       console.log("Businesses:", data);
+      setBusinessData(data);
+      setDbStatus("Database is up! Fetched businesses successfully.");
     } catch (error) {
       console.error("Failed to load businesses:", error);
+      setDbStatus(`Database test failed: ${error.message}`);
+      setBusinessData(null);
     }
   };
 
   const connectAndLoadOrders = async () => {
     console.log("window.ethereum =", window.ethereum);
 
+    // check if the browser has MetaMask browser extension
     if (!window.ethereum) {
       console.error("MetaMask is not installed");
       setStatusMessage("MetaMask is not installed. Open in Chrome/Edge with MetaMask.");
@@ -118,6 +129,10 @@ function Main() {
         Connect Wallet & Load Orders
       </button>
 
+      <button style={{ ...styles.button, marginLeft: "10px" }} onClick={loadBusinesses}>
+        Test Database
+      </button>
+
       <div style={styles.card}>
         <h2>Status</h2>
         <p>{statusMessage}</p>
@@ -129,6 +144,21 @@ function Main() {
         <p><strong>Network:</strong> {networkInfo || "Not connected"}</p>
         <p><strong>OrderFactory Address:</strong> {orderFactoryAddress}</p>
         <p><strong>Total Orders:</strong> {orderAddresses.length}</p>
+      </div>
+
+      <div style={styles.card}>
+        <h2>Database Test</h2>
+        <p>{dbStatus || "Click 'Test Database' to check"}</p>
+        {businessData && (
+          <div>
+            <h3>Businesses:</h3>
+            <ul>
+              {businessData.map((b, i) => (
+                <li key={i}>{b.name} (ID: {b.id})</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <h2>All Orders</h2>
