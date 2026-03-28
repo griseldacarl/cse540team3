@@ -2,6 +2,7 @@ const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 
+// This file auto deploys
 async function main() {
   // Deploy contract
   const OrderFactory = await hre.ethers.getContractFactory("OrderFactory");

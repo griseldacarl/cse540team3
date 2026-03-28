@@ -8,10 +8,11 @@ async function ensureDockerRunning() {
   try {
     // Check if Docker is responsive
     execSync("docker info", { stdio: "ignore" });
-    console.log("Docker is running ✅");
+    console.log("Docker is running.");
   } catch (err) {
     console.log("Docker is not running. Attempting to start Docker...");
 
+  // Start docker based on system
     try {
       if (process.platform === "win32") {
         // Start Docker Desktop on Windows
@@ -35,6 +36,7 @@ async function ensureDockerRunning() {
   }
 }
 
+// connect to my sql
 async function waitForMysql(maxRetries = 15, delayMs = 3000) {
   let retries = maxRetries;
   while (retries > 0) {
@@ -45,7 +47,7 @@ async function waitForMysql(maxRetries = 15, delayMs = 3000) {
         password: process.env.DB_PASSWORD,
       });
       await testConn.end();
-      console.log("MySQL is ready ✅");
+      console.log("MySQL is ready");
       return;
     } catch {
       retries--;
@@ -59,17 +61,17 @@ async function waitForMysql(maxRetries = 15, delayMs = 3000) {
 async function initDb() {
   let connection;
   try {
-    // 1️⃣ Ensure Docker is running
+    // Ensure Docker is running
     await ensureDockerRunning();
 
-    // 2️⃣ Start Docker containers
+    // Start Docker containers
     console.log("Starting Docker containers...");
     execSync("docker-compose up -d", { stdio: "inherit" });
 
-    // 3️⃣ Wait for MySQL container
+    // Wait for MySQL container
     await waitForMysql();
 
-    // 4️⃣ Connect to MySQL (without DB yet)
+    // Connect to MySQL (without DB yet)
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -78,7 +80,7 @@ async function initDb() {
     });
     console.log("Connected to MySQL...");
 
-    // 5️⃣ Execute schema.sql
+    // Execute schema.sql
     const schemaPath = path.join(__dirname, "schema.sql");
     const schema = fs.readFileSync(schemaPath, "utf8");
     await connection.query(schema);

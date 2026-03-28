@@ -1,4 +1,4 @@
-
+// The app container
 import Main from "./components/Main";
 function App() {
   return (

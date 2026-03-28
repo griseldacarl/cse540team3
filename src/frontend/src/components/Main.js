@@ -8,9 +8,10 @@ function Main() {
   const [orderAddresses, setOrderAddresses] = useState([]);
   const [statusMessage, setStatusMessage] = useState("Not connected");
   const [networkInfo, setNetworkInfo] = useState("");
-  const [businessData, setBusinessData] = useState(null); // new state
-  const [dbStatus, setDbStatus] = useState(""); // new state
+  const [businessData, setBusinessData] = useState(null);
+  const [dbStatus, setDbStatus] = useState("");
 
+  // This loads the businesses from the database
   const loadBusinesses = async () => {
     try {
       setDbStatus("Checking database...");
@@ -31,6 +32,7 @@ function Main() {
   const connectAndLoadOrders = async () => {
     console.log("window.ethereum =", window.ethereum);
 
+    // check if the browser has MetaMask browser extension
     if (!window.ethereum) {
       console.error("MetaMask is not installed");
       setStatusMessage("MetaMask is not installed. Open in Chrome/Edge with MetaMask.");

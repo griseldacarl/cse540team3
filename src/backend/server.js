@@ -1,7 +1,8 @@
+// This is the main backend server file
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const initDb = require("./initDb"); // your initDb.js
+const initDb = require("./initDb");
 const businessRoutes = require("./routes/businesses");
 
 dotenv.config();
