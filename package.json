@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "install-all": "npm --prefix src/backend install && npm --prefix src/frontend install",
+    "compile": "npx hardhat compile",
+    "start-hardhat": "npx hardhat node",
     "deploy": "npx hardhat run src/frontend/src/scripts/deploy.js --network localhost",
     "backend": "cd src/backend && npm run dev",
     "frontend": "cd src/frontend && npm start",

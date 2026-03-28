@@ -9,4 +9,7 @@ module.exports = {
       chainId: 1337,
     },
   },
+  paths: {
+    sources: "./src/contracts",  // ← update this to your actual path
+  },
 };

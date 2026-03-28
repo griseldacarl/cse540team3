@@ -44,6 +44,7 @@ async function waitForMysql(maxRetries = 15, delayMs = 3000) {
       const testConn = await mysql.createConnection({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
+        port: process.env.DB_PORT,
         password: process.env.DB_PASSWORD,
       });
       await testConn.end();
@@ -75,6 +76,7 @@ async function initDb() {
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
+      port: process.env.DB_PORT,
       password: process.env.DB_PASSWORD,
       multipleStatements: true,
     });
