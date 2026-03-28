@@ -4,7 +4,7 @@ import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
 import { ethers } from "ethers";
 
 /*
- * This component is the main frontend for the Government Supply Chain app.
+ * This component is the frontend for the Government Supply Chain app.
  * It connects to MetaMask, reads order data from the deployed smart contract,
  * tests the backend database connection, and displays both blockchain-based
  * order information and database-stored business records in one interface.
@@ -23,7 +23,6 @@ function Main() {
    * business records or an error state. This gives the page a quick connectivity check for the
    * MySQL-backed portion of the project without mixing that logic into the blockchain flow.
    */
-  // This loads the businesses from the database
   const loadBusinesses = async () => {
     try {
       setDbStatus("Checking database...");
