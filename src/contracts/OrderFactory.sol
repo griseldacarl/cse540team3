@@ -3,13 +3,13 @@ pragma solidity ^0.8.28;
 import "./OrderContract.sol";
 contract OrderFactory is OrderBase {
 
-    //Gov official, allowed to spawn order contracts
+    // Admin address should be the government official in-charge of the project
     address public admin;
 
     // When an order is created, the address to the order is stored in this array.
     address[] orderContracts;
 
-    //Registry address so we can check businesses from this contract.
+    // Registry address so we can check businesses from this contract.
     address businessRegistry;
 
     event OrderContractCreated(address indexed businessAddress, address orderContractAddress);
