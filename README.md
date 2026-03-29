@@ -12,6 +12,7 @@ The chosen platform will be Ethereum blockchain with a tech stack of Hardhat, Me
 ![Screenshot](./Screenshots/Architecture.png)
 
 ### Project Structure
+```bash
 project-root/
 ├── Screenshots/                         # Project screenshots/documentation images
 ├── ignition/                            # Hardhat Ignition deployment artifacts/configs
@@ -59,6 +60,7 @@ project-root/
 ├── hardhat.config.js                    # Hardhat configuration
 ├── package-lock.json
 └── package.json                         # Root project dependencies and scripts
+```
 
 ## Dependencies
 
