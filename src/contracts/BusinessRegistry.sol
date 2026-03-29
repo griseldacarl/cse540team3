@@ -6,7 +6,7 @@ contract BusinessRegistry {
     address public admin;
 
 
-    // Business identiable information
+    // Business identifiable information
     struct Business {
         string name;
         string id;
