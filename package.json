@@ -12,6 +12,9 @@
     "dev": "npm run install-all && npm run start-all",
     "quick-dev": "npm run start-all"
   },
+  "dependencies": {
+    "dotenv": "17.3.1"
+  },
   "devDependencies": {
     "concurrently": "^9.0.0",
     "hardhat": "^2.26.0",
