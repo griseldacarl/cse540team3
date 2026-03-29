@@ -5,6 +5,10 @@
 /.pnp
 .pnp.js
 
+# nested node_modules
+/src/frontend/node_modules/*
+/src/backend/node_modules/*
+
 # testing
 /coverage
 
