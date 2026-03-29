@@ -4,6 +4,13 @@ const { execSync } = require("child_process");
 const mysql = require("mysql2/promise");
 require("dotenv").config();
 
+/*
+ * This module initializes the database layer. It makes sure Docker is available,
+ * starts the local MySQL container stack, waits until MySQL is responsive, and
+ * then applies the schema file so the rest of the backend can assume the database exists and
+ * is ready to serve queries.
+ */
+
 async function ensureDockerRunning() {
   try {
     // Check if Docker is responsive
