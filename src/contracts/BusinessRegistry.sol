@@ -2,17 +2,21 @@
 pragma solidity ^0.8.28;
 
 contract BusinessRegistry {
-    //Admin role for gov official
+    // Admin address will be the wallet for the government official
     address public admin;
 
 
-    // Data structure for the business
-    // Optionally add things like verified status
+    // Business identifiable information
     struct Business {
         string name;
         string id;
     }
 
+    /* 
+     * Constructor sets the admin address for the government official
+     * Parameters: None
+     * Returns: None
+     */
     constructor() {
         admin = msg.sender; // Set the deployer as the admin
     }   
@@ -20,17 +24,23 @@ contract BusinessRegistry {
     event BusinessRegistered(address indexed businessAddress, string name, string id);
     event BusinessWalletUpdated(address indexed oldWallet, address indexed newWallet, string name, string id);
 
-    //Store mapping of wallet->business
+    // Store mapping of wallet->business
     mapping (address => Business) public businesses;
 
+    /*
+     * Restrict access to functions to only the government admin
+     */
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin can call this function");
         _;
     }
 
-    //Register a business with their wallet, name, and business id.
-    // Gov official only, gov works with business and its own records to get information.
-    // This function should add the business into the mapping
+    /*
+     * Register a buiness with their wallet, name and id
+     * Access: Admin only
+     * Parameters: wallet, name, id
+     * Returns: bool of success/failure
+     */
     function registerBusiness(address wallet, string memory name, string memory id) public onlyAdmin returns (bool) {
         // Check if the business is already registered
         require(bytes(businesses[wallet].name).length == 0, "Business already registered");
@@ -41,8 +51,13 @@ contract BusinessRegistry {
         return true;
     }
 
-    // Update an already-registered business' wallet.
-    // Gov official only. Would be coordinated between gov and business
+    
+    /*
+     * Update the wallet of a registered
+     * Access: Admin only
+     * Parameters: oldWallet, newWallet
+     * Returns: None
+     */
     function updateBusinessWallet(address oldWallet, address newWallet) public onlyAdmin {
         Business storage business = businesses[oldWallet];
         delete businesses[oldWallet];
@@ -50,13 +65,24 @@ contract BusinessRegistry {
         emit BusinessWalletUpdated(oldWallet, newWallet, business.name, business.id);
     }
 
-    // Anyone can call this, including public. Read only, doesn't update data.
-    // Returns the business struct associated with the wallet
+    
+    /* 
+     * Get the business struct by wallet address
+     * Access: Public
+     * Parameters: wallet
+     * Returns: Related business struct
+     */
     function getBusinessByAddress(address wallet) public view returns (Business memory){
         return businesses[wallet];
     }
 
-    // Get all businesses? For the sake of public transparency.
-    // Unsure if necessary. Returns list of all business structs registered
-    function getAllBusinesses() public view returns (Business[] memory) {   }//This would use a lot of gas, so maybe not the best idea. Maybe we can have a separate function that returns the total number of businesses, and then we can have a function that returns a business by index?
+    
+    //This would use a lot of gas, so maybe not the best approach. Maybe we can have a separate function that returns the total number of businesses, and then we can have a function that returns a business by index?
+    /*
+     * Get all businesses
+     * Access: Public
+     * Parameters: None
+     * Returns: Array of all businesses
+     */
+    function getAllBusinesses() public view returns (Business[] memory) {   }
 }

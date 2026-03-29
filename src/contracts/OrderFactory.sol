@@ -3,31 +3,33 @@ pragma solidity ^0.8.28;
 import "./OrderContract.sol";
 contract OrderFactory is OrderBase {
 
-    //Gov official, allowed to spawn order contracts
+    // Admin address should be the government official in-charge of the project
     address public admin;
 
     // When an order is created, the address to the order is stored in this array.
     address[] orderContracts;
 
-    //Registry address so we can check businesses from this contract.
+    // Registry address so we can check businesses from this contract.
     address businessRegistry;
 
     event OrderContractCreated(address indexed businessAddress, address orderContractAddress);
 
+    /*
+     * Constructor sets the admin address and the businesss registry address
+     * Parameteres: registryAddress
+     * Returns: None
+     */
     constructor(address registryAddress) {
         admin = msg.sender; // Set the deployer as the admin
         businessRegistry = registryAddress;
     }
 
-
-    // Gov-only
-    // Generate the contract on-chain and return it's address into the list of order contracts
-    // Flow looks like:
-    // 1. Gov official enters information into the function
-    // 2. Function checks business registry contract to ensure business is in the registry
-    // 3. If yes, create the order contract, store the order contract address in orderContracts
-    // 4. If no, process fails
-    
+    /* 
+     * Creates an order contract and stores its reference. Admin enters info, function validates with registry, if valid - create contract, otherwise fail
+     * Access: Admin only
+     * Parameters: BusinessAddress, itemNames, itemPrices, itemQuantities
+     * Returns: address of new contract
+     */
     function createOrderContract(address BusinessAddress,string[] memory itemNames, uint256[] memory itemPrices, string[] memory itemQuantities) public returns (address) {
             require(msg.sender == admin, "Only admin can call this function");
             OrderContract  newContract = new OrderContract(BusinessAddress, itemNames, itemPrices, itemQuantities);
@@ -36,9 +38,12 @@ contract OrderFactory is OrderBase {
             return address(newContract);
     }
 
-    //public access
-    // Return all orders
-    // This can be broken into several getter functions for the sake of gas cost.  I.e GetOrdersByBusiness, GetOutstandingOrders, etc
+    /*
+     * Returns all order contracts
+     * Access: Public
+     * Parameters: None
+     * Returns: Array of order contract references
+     */
     function getAllOrders() public view returns (address[] memory) {
         return orderContracts;
     }
