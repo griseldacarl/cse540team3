@@ -13,7 +13,7 @@
     "quick-dev": "npm run start-all"
   },
   "dependencies": {
-    "dotenv": "17.3.1"
+    "dotenv": "^17.3.1"
   },
   "devDependencies": {
     "concurrently": "^9.0.0",
