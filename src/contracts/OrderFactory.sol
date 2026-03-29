@@ -16,7 +16,7 @@ contract OrderFactory is OrderBase {
 
     /*
      * Constructor sets the admin address and the businesss registry address
-     * Parameteres: registryAddress
+     * Parameters: registryAddress
      * Returns: None
      */
     constructor(address registryAddress) {
