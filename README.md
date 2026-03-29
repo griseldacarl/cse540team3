@@ -11,6 +11,55 @@ The chosen platform will be Ethereum blockchain with a tech stack of Hardhat, Me
 
 ![Screenshot](./Screenshots/Architecture.png)
 
+### Project Structure
+project-root/
+├── Screenshots/                         # Project screenshots/documentation images
+├── ignition/                            # Hardhat Ignition deployment artifacts/configs
+├── src/
+│   ├── backend/                         # Backend server and database integration
+│   │   ├── routes/
+│   │   │   └── businesses.js            # API routes for business-related operations
+│   │   ├── db.js                        # Database connection configuration
+│   │   ├── docker-compose.yml           # Docker setup for backend services
+│   │   ├── env_template                 # Environment variable template
+│   │   ├── initDb.js                    # Database initialization script
+│   │   ├── package-lock.json
+│   │   ├── package.json                 # Backend dependencies and scripts
+│   │   ├── schema.sql                   # SQL schema for database setup
+│   │   └── server.js                    # Express backend entry point
+│   │
+│   ├── contracts/                       # Solidity smart contracts
+│   │   ├── BusinessRegistry.sol         # Stores and manages registered businesses
+│   │   ├── OrderContract.sol            # Handles individual procurement orders
+│   │   └── OrderFactory.sol             # Deploys and tracks order contracts
+│   │
+│   └── frontend/                        # React frontend application
+│       ├── public/
+│       │   └── index.html               # Main HTML template
+│       ├── src/
+│       │   ├── GovernmentABI/           # ABI and deployed contract addresses
+│       │   │   ├── contractGovernmentABI.js
+│       │   │   ├── contractGovernmentAddress.js
+│       │   │   ├── orderFactoryABI.js
+│       │   │   └── orderFactoryAddress.js
+│       │   ├── components/
+│       │   │   └── Main.js              # Main UI component
+│       │   ├── scripts/
+│       │   │   └── deploy.js            # Frontend-related deployment helper script
+│       │   ├── App.js                   # Root React component
+│       │   ├── index.css                # Global styles
+│       │   └── index.js                 # React entry point
+│       └── test/
+│           └── Lock.js                  # Frontend/local test file (if retained)
+│
+├── test/                                # Hardhat smart contract tests
+│   └── BusinessRegistry.js              # Tests for BusinessRegistry contract
+├── .gitignore                           # Git ignored files/folders
+├── README.md                            # Project documentation
+├── hardhat.config.js                    # Hardhat configuration
+├── package-lock.json
+└── package.json                         # Root project dependencies and scripts
+
 ## Dependencies
 
 | Package     | Version             |
@@ -28,6 +77,10 @@ The chosen platform will be Ethereum blockchain with a tech stack of Hardhat, Me
 ## Run directions & Scripts
 
 From the **root folder**, you can run:
+```bash
+# Full dev workflow (install + start)
+npm run dev
+```
 
 ```bash
 # Setup ENV File
@@ -47,9 +100,6 @@ npm run compile
 
 # Deploy smart contracts to local blockchain
 npm run deploy
-
-# Full dev workflow (install + start)
-npm run dev
 
 # Quick dev (start without reinstalling dependencies)
 npm run quick-dev
