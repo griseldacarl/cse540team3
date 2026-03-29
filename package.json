@@ -13,6 +13,8 @@
     "quick-dev": "npm run start-all"
   },
   "devDependencies": {
-    "concurrently": "^9.0.0"
+    "concurrently": "^9.0.0",
+    "hardhat": "^2.26.0",
+    "@nomicfoundation/hardhat-toolbox": "^5"
   }
 }
