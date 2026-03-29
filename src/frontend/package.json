@@ -7,7 +7,6 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
-    "dotenv": "^17.3.1",
     "ethers": "^6.16.0",
     "government-supply-chain-project": "file:../..",
     "react": "^19.2.4",
