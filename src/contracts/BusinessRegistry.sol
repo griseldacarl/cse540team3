@@ -75,7 +75,6 @@ contract BusinessRegistry {
     function getBusinessByAddress(address wallet) public view returns (Business memory){
         return businesses[wallet];
     }
-
     
     //This would use a lot of gas, so maybe not the best approach. Maybe we can have a separate function that returns the total number of businesses, and then we can have a function that returns a business by index?
     /*
