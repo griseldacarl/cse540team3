@@ -36,6 +36,7 @@ contract OrderFactory is OrderBase {
             require(msg.sender == admin, "Only admin can call this function");
             OrderContract  newContract = new OrderContract(BusinessAddress, itemNames, itemPrices, itemQuantities);
             orderContracts.push(address(newContract));
+            businessOrders[BusinessAddress].push(address(newContract));
             emit OrderContractCreated(BusinessAddress, address(newContract));
             return address(newContract);
     }
@@ -48,5 +49,53 @@ contract OrderFactory is OrderBase {
      */
     function getAllOrders() public view returns (address[] memory) {
         return orderContracts;
+    }
+
+    /*
+     * Returns all order contracts for a business
+     * Access: Public
+     * Parameters: business wallet address
+     * Returns: Array of order contract references
+     */
+    function getOrdersByBusiness(address businessAddress) public view returns (address[] memory) {
+        return businessOrders[businessAddress];
+    }
+
+    /*
+    * Returns the details of a specific order contract
+    * Access: Public
+    * Parameters: orderAddress
+    * Returns:
+    *   businessAddress - the vendor/business for the order
+    *   itemNames - list of ordered items
+    *   itemPrices - list of item prices
+    *   itemQuantities - list of item quantities
+    *   paymentStatus - if the payment has been completed
+    *   fulfillmentStatus - if the order was fulfilled
+    */
+    function getOrderDetail(address orderAddress)
+        public
+        view
+        returns (
+            address businessAddress,
+            string[] memory itemNames,
+            uint256[] memory itemPrices,
+            string[] memory itemQuantities,
+            bool paymentStatus,
+            bool fulfillmentStatus
+        )
+        {
+        require(orderAddress != address(0), "Invalid order address");
+
+        OrderContract order = OrderContract(orderAddress);
+
+        return (
+            order.getBusinessAddress(),
+            order.getItemNames(),
+            order.getItemPrices(),
+            order.getItemQuantities(),
+            order.getPaymentStatus(),
+            order.getFulfillmentStatus()
+        );
     }
 }
