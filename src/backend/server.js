@@ -8,7 +8,7 @@ const businessRoutes = require("./routes/businesses");
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 /*
  * This file is the backend entry point. It loads configuration, prepares the Express app,
