@@ -26,7 +26,7 @@ function Main() {
   const loadBusinesses = async () => {
     try {
       setDbStatus("Checking database...");
-      const response = await fetch("http://localhost:5000/api/businesses");
+      const response = await fetch("http://localhost:5001/api/businesses");
       console.log("Response from database: ", response);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
@@ -137,6 +137,62 @@ function Main() {
     }
   };
 
+
+  /*
+   * This is just a function to test current Backend functions
+   */
+  const testFunction = async () => {
+    try{
+      // Create provider + signer
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const currentWalletAddress = await signer.getAddress();
+
+      // 3) Make a raw low-level call to getAllOrders()
+      const iface = new ethers.Interface(orderFactoryABI);
+      const callData = iface.encodeFunctionData("getAllOrders", []);
+      console.log("Encoded getAllOrders() call data:", callData);
+
+      const rawResult = await provider.call({
+        to: orderFactoryAddress,
+        data: callData,
+      });
+
+      console.log("Raw eth_call result for getAllOrders():", rawResult);
+
+      if (rawResult === "0x") {
+        setStatusMessage("Contract exists, but getAllOrders() returned raw 0x. Function likely missing on deployed bytecode.");
+        alert("Contract code exists, but getAllOrders() returned raw 0x. Check that the deployed contract really contains getAllOrders().");
+        return;
+      }
+
+      // Create contract instance
+      const contract = new ethers.Contract(
+        orderFactoryAddress,
+        orderFactoryABI,
+        signer
+      );
+
+      // Normal ethers call
+      const orders = await contract.getAllOrders();
+
+      console.log("Decoded order contract addresses:", orders);
+
+      if (!orders || orders.length === 0) {
+        setOrderAddresses([]);
+        setStatusMessage("Connected successfully. No orders found yet.");
+        return;
+      }
+
+      setOrderAddresses(orders);
+      setStatusMessage("Connected and loaded all orders successfully!");
+    } catch (error) {
+      console.error("Error connecting to MetaMask or reading contract:", error);
+      setStatusMessage("Failed to load orders. Check console.");
+      alert("Failed to load orders. Check the browser console (F12).");
+    }
+  };
+
   /*
    * The rendered layout groups the app into three user-facing views: connection status,
    * blockchain and backend metadata, and the discovered order list.
@@ -151,6 +207,10 @@ function Main() {
 
       <button style={{ ...styles.button, marginLeft: "10px" }} onClick={loadBusinesses}>
         Test Database
+      </button>
+
+      <button style={{ ...styles.button, marginLeft: "10px" }} onClick={testFunction}>
+        Test Function
       </button>
 
       <div style={styles.card}>

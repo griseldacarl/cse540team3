@@ -12,6 +12,8 @@ contract OrderFactory is OrderBase {
     // Registry address so we can check businesses from this contract.
     address businessRegistry;
 
+    mapping(address => address[]) private businessOrders;
+
     event OrderContractCreated(address indexed businessAddress, address orderContractAddress);
 
     /*
