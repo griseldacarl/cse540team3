@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
+import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI"
+import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
 import { ethers } from "ethers";
 
 /*
@@ -17,6 +19,10 @@ function Main() {
   const [networkInfo, setNetworkInfo] = useState("");
   const [businessData, setBusinessData] = useState(null);
   const [dbStatus, setDbStatus] = useState("");
+  // this is for testing order details
+  const [order, setOrder] = useState(null);
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
+
 
   /*
    * The database helper exercises the backend API and updates the UI with either the returned
@@ -37,6 +43,23 @@ function Main() {
       console.error("Failed to load businesses:", error);
       setDbStatus(`Database test failed: ${error.message}`);
       setBusinessData(null);
+    }
+  };
+
+  const loadBusinessByWallet = async (walletAddress) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/businesses/wallet/${walletAddress}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      console.log("Business by wallet:", data);
+
+      setSelectedBusiness(data);   // <-- important
+      return data;
+    } catch (error) {
+      console.error("Failed to load business by wallet:", error);
+      setSelectedBusiness(null);
+      return null;
     }
   };
 
@@ -64,6 +87,7 @@ function Main() {
 
       // Create provider + signer
       const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
       const currentWalletAddress = await signer.getAddress();
 
@@ -142,56 +166,134 @@ function Main() {
    * This is just a function to test current Backend functions
    */
   const testFunction = async () => {
-    try{
-      // Create provider + signer
+
+    if (!businessData || businessData.length === 0) {
+      alert("No business data loaded. Test Database first.");
+      return;
+    }
+
+    try {
+      setStatusMessage("Testing blockchain function...");
+
       const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
       const currentWalletAddress = await signer.getAddress();
+      setWalletAddress(currentWalletAddress);
 
-      // 3) Make a raw low-level call to getAllOrders()
-      const iface = new ethers.Interface(orderFactoryABI);
-      const callData = iface.encodeFunctionData("getAllOrders", []);
-      console.log("Encoded getAllOrders() call data:", callData);
+      // Contract instance
+      const business = businessData[1];
+      console.log("Testing:", business.business_name);
 
-      const rawResult = await provider.call({
-        to: orderFactoryAddress,
-        data: callData,
-      });
-
-      console.log("Raw eth_call result for getAllOrders():", rawResult);
-
-      if (rawResult === "0x") {
-        setStatusMessage("Contract exists, but getAllOrders() returned raw 0x. Function likely missing on deployed bytecode.");
-        alert("Contract code exists, but getAllOrders() returned raw 0x. Check that the deployed contract really contains getAllOrders().");
-        return;
-      }
-
-      // Create contract instance
-      const contract = new ethers.Contract(
-        orderFactoryAddress,
-        orderFactoryABI,
+      const businessRegistryContract = new ethers.Contract(
+        businessRegistryAddress,
+        businessRegistryABI,
         signer
       );
 
-      // Normal ethers call
-      const orders = await contract.getAllOrders();
+      const adminAddress = await businessRegistryContract.admin();
+      console.log("Admin wallet:", adminAddress);
+      console.log("Using wallet:", currentWalletAddress);
+      const exists = await businessRegistryContract.businessExists(business.business_name);
 
-      console.log("Decoded order contract addresses:", orders);
+    if (!exists) {
+      // Send a transaction to register the business
+      const tx = await businessRegistryContract.registerBusiness(
+        business.wallet_address,
+        business.business_name,
+        business.id
+      );
 
-      if (!orders || orders.length === 0) {
-        setOrderAddresses([]);
-        setStatusMessage("Connected successfully. No orders found yet.");
+      console.log("Transaction sent:", tx.hash);
+      await tx.wait(); // wait until mined
+      console.log("Business registered successfully!");
+    }else{
+      console.log(`${business.business_name} is already registered. Skipping.`);
+    }
+      
+
+      const business1 = await businessRegistryContract.getBusinessByName(business.business_name);
+      console.log("Order business addresses:", business1);
+
+      const orderContract = new ethers.Contract(orderFactoryAddress, orderFactoryABI, signer);
+
+      
+      if (!orderContract) {
+        console.error("orderContract not initialized");
         return;
       }
 
-      setOrderAddresses(orders);
-      setStatusMessage("Connected and loaded all orders successfully!");
-    } catch (error) {
-      console.error("Error connecting to MetaMask or reading contract:", error);
-      setStatusMessage("Failed to load orders. Check console.");
-      alert("Failed to load orders. Check the browser console (F12).");
+      // Make sure connected wallet is admin
+      if (currentWalletAddress.toLowerCase() !== adminAddress.toLowerCase()) {
+        console.error("Connected wallet is NOT admin");
+        return;
+      }
+
+      const vendorAddress = business.wallet_address;
+
+      const itemNames = [
+        "Concrete Mix",
+        "Rebar Steel",
+        "Site Survey Service"
+      ];
+
+      const itemPrices = [
+        1500,   // $15.00 or 1500 cents depending on your unit choice
+        800,    // $8.00
+        25000   // $250.00
+      ];
+
+      const itemQuantities = [
+        "10 cubic yards",
+        "500 linear feet",
+        "1 package"
+      ];
+
+      console.log("Creating order for vendor:", vendorAddress);
+
+      const tx1 = await orderContract.createOrderContract(
+        vendorAddress,
+        itemNames,
+        itemPrices,
+        itemQuantities
+      );
+
+      console.log("Transaction sent:", tx1.hash);
+
+      const receipt = await tx1.wait();
+      console.log("Transaction mined:", receipt);
+
+      const orders = await orderContract.getAllOrders();
+      console.log("Decoded order addresses:", orders);
+
+      setOrderAddresses(orders || []);
+      setStatusMessage("Business registered and orders loaded successfully!");
+
+      const ordersForBusiness = await orderContract.getOrdersByBusiness(business.wallet_address);
+      console.log("order addresses for a business:", ordersForBusiness);
+
+      const details = await orderContract.getOrderDetail(ordersForBusiness[0]);
+      console.log("a order's details for a business:", details);
+
+      const formattedOrder = {
+        businessAddress: details[0],
+        itemNames: details[1],
+        itemPrices: details[2].map((p) => p.toString()),
+        itemQuantities: details[3],
+        paymentStatus: details[4],
+        fulfillmentStatus: details[5],
+      };
+
+    setOrder(formattedOrder)
+
+    loadBusinessByWallet(details[0]);
+    } catch (err) {
+      console.error("Blockchain function error:", err);
+      if (err.reason) alert(err.reason);
+      else alert(err.message);
+      setStatusMessage("Error: Check console for details");
     }
-  };
+};
 
   /*
    * The rendered layout groups the app into three user-facing views: connection status,
@@ -224,6 +326,7 @@ function Main() {
         <p><strong>Network:</strong> {networkInfo || "Not connected"}</p>
         <p><strong>OrderFactory Address:</strong> {orderFactoryAddress}</p>
         <p><strong>Total Orders:</strong> {orderAddresses.length}</p>
+        
       </div>
 
       <div style={styles.card}>
@@ -238,6 +341,46 @@ function Main() {
               ))}
             </ul>
           </div>
+        )}
+      </div>
+
+      <div style={styles.card}>
+        <h2>Order Details</h2>
+
+        {order ? (
+          <>
+            <p><strong>Business Address:</strong> {order.businessAddress}</p>
+            <p><strong>Payment Status:</strong> {order.paymentStatus ? "Paid" : "Unpaid"}</p>
+            <p><strong>Fulfillment Status:</strong> {order.fulfillmentStatus ? "Fulfilled" : "Not Fulfilled"}</p>
+            <h3>Procurement Vendor Details</h3>
+            {selectedBusiness ? (
+              <div style={styles.businessBox}>
+                <p><strong>Business Name:</strong> {selectedBusiness.business_name}</p>
+                <p><strong>Registration #:</strong> {selectedBusiness.registration_number}</p>
+                <p><strong>Business Type:</strong> {selectedBusiness.business_type}</p>
+                <p><strong>Contact Email:</strong> {selectedBusiness.contact_email}</p>
+                <p><strong>Phone:</strong> {selectedBusiness.phone_number}</p>
+                <p>
+                  <strong>Address:</strong>{" "}
+                  {selectedBusiness.street_address}, {selectedBusiness.city},{" "}
+                  {selectedBusiness.state_province} {selectedBusiness.postal_code},{" "}
+                  {selectedBusiness.country}
+                </p>
+              </div>
+            ) : (
+              <p>No business details loaded for this vendor yet.</p>
+            )}
+            <h3>Items</h3>
+            <ul>
+              {order.itemNames.map((name, index) => (
+                <li key={index}>
+                  {name} — Qty: {order.itemQuantities[index]} — Price: {order.itemPrices[index]}
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p>No order selected</p>
         )}
       </div>
 

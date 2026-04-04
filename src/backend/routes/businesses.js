@@ -22,6 +22,78 @@ router.get("/", async (req, res) => {
   }
 });
 
+/*
+ * GET business by database ID
+ * Example: /api/businesses/id/3
+ */
+router.get("/id/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await db.query(
+      "SELECT * FROM businesses WHERE id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error fetching business by ID:", error);
+    res.status(500).json({ error: "Failed to fetch business by ID" });
+  }
+});
+
+/*
+ * GET business by wallet address
+ * Example: /api/businesses/wallet/0x3333333333333333333333333333333333333333
+ */
+router.get("/wallet/:wallet", async (req, res) => {
+  try {
+    const { wallet } = req.params;
+
+    const [rows] = await db.query(
+      "SELECT * FROM businesses WHERE wallet_address = ?",
+      [wallet]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error fetching business by wallet:", error);
+    res.status(500).json({ error: "Failed to fetch business by wallet" });
+  }
+});
+
+/*
+ * GET business by business name
+ * Example: /api/businesses/name/Pikes%20Peak%20Construction%20Group
+ */
+router.get("/name/:name", async (req, res) => {
+  try {
+    const { name } = req.params;
+
+    const [rows] = await db.query(
+      "SELECT * FROM businesses WHERE business_name = ?",
+      [name]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error fetching business by name:", error);
+    res.status(500).json({ error: "Failed to fetch business by name" });
+  }
+});
+
 // POST new business
 router.post("/", async (req, res) => {
   try {

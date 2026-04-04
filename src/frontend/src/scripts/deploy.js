@@ -36,6 +36,19 @@ async function main() {
     `export const orderFactoryABI = ${orderFactoryABI};\n`
   );
 
+  // Write BusinessRegistry address
+fs.writeFileSync(
+  path.join(frontendPath, "businessRegistryAddress.js"),
+  `export const businessRegistryAddress = "${await businessRegistry.getAddress()}";\n`
+);
+
+// Write BusinessRegistry ABI
+const businessRegistryABI = BusinessRegistry.interface.formatJson();
+fs.writeFileSync(
+  path.join(frontendPath, "businessRegistryABI.js"),
+  `export const businessRegistryABI = ${businessRegistryABI};\n`
+);
+
   console.log("Frontend ABI & address updated!");
 }
 
