@@ -1,9 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
 import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI"
 import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
 import { ethers } from "ethers";
+import Drawer from '@mui/material/Drawer';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import BusinessIcon from '@mui/icons-material/Business';
+import SettingsIcon from '@mui/icons-material/Settings'
+import DescriptionIcon from '@mui/icons-material/Description';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import Box from '@mui/material/Box';
+import Typography from "@mui/material/Typography";
+import CircleIcon from '@mui/icons-material/Circle';
+
+
+
+//How wide the side drawer is
+const drawerWidth = 240;
 
 /*
  * This component is the frontend for the Government Supply Chain app.
@@ -24,6 +43,68 @@ function Main() {
   const [selectedBusiness, setSelectedBusiness] = useState(null);
 
 
+  const [walletColor, setwalletColor] = useState("Red");
+  const [blockColor, setblockColor] = useState("Red");
+  const [dbColor, setDbColor] = useState("Red");
+  const [selectedIndex, setSelectedIndex] = useState(3);
+
+
+  //Check statuses on startup
+  useEffect(() => {
+    loadConnections();
+
+  }, []);
+
+
+  const loadConnections = async () => {
+
+    //Test DB Connection
+    try{
+      const response = await fetch("http://localhost:5001/api/businesses");
+      console.log("Response from database: ", response);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      setDbColor("Green")
+    }
+    catch(error){
+      console.error("Failed to load businesses:", error);
+      setDbStatus(`Database test failed: ${error.message}`);
+      setBusinessData(null);
+    }
+
+    //Test getting Metamask Wallet
+    try{
+      // Create provider + signer
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = await provider.getSigner();
+      const currentWalletAddress = await signer.getAddress();
+      setwalletColor("Green")
+    }
+    catch(error){
+
+    }
+
+
+    //Test BlockChain Network
+    try{
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = await provider.getSigner();
+      const currentWalletAddress = await signer.getAddress();
+      const network = await provider.getNetwork();
+      const networkText = `${network.name} (chainId: ${network.chainId.toString()})`;
+      setNetworkInfo(networkText);
+      setblockColor("Green")
+    }
+    catch(error){
+
+    }
+
+  }
+
+
+
   /*
    * The database helper exercises the backend API and updates the UI with either the returned
    * business records or an error state. This gives the page a quick connectivity check for the
@@ -39,6 +120,7 @@ function Main() {
       console.log("Businesses:", data);
       setBusinessData(data);
       setDbStatus("Database is up! Fetched businesses successfully.");
+      setDbColor("Green")
     } catch (error) {
       console.error("Failed to load businesses:", error);
       setDbStatus(`Database test failed: ${error.message}`);
@@ -68,7 +150,7 @@ function Main() {
    * It connects the user's wallet, checks the currently selected network and then reads the
    * list of order contract addresses so the UI can present the on-chain order state.
    */
-  const connectAndLoadOrders = async () => {
+  const connectwallet = async () => {
     console.log("window.ethereum =", window.ethereum);
 
     // check if the browser has MetaMask browser extension
@@ -92,6 +174,51 @@ function Main() {
       const currentWalletAddress = await signer.getAddress();
 
       setWalletAddress(currentWalletAddress);
+
+
+      console.log("Connected wallet:", currentWalletAddress);
+      console.log("OrderFactory address:", orderFactoryAddress);
+      console.log("OrderFactory ABI:", orderFactoryABI);
+
+      // 1) Check network
+      const network = await provider.getNetwork();
+      const networkText = `${network.name} (chainId: ${network.chainId.toString()})`;
+      setNetworkInfo(networkText);
+
+      console.log("Network:", network.name);
+      console.log("Chain ID:", network.chainId.toString());
+
+    } catch (error) {
+      console.error("Error connecting to MetaMask or reading contract:", error);
+
+    }
+  };
+
+  const LoadOrders = async () => {
+    console.log("window.ethereum =", window.ethereum);
+
+    // check if the browser has MetaMask browser extension
+    if (!window.ethereum) {
+      console.error("MetaMask is not installed");
+      setStatusMessage("MetaMask is not installed. Open in Chrome/Edge with MetaMask.");
+      alert("MetaMask is not installed. Open this app in Chrome/Edge and install the MetaMask extension.");
+      return;
+    }
+
+    try {
+      setStatusMessage("Connecting to MetaMask...");
+
+      // Connect wallet
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+
+      // Create provider + signer
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = await provider.getSigner();
+      const currentWalletAddress = await signer.getAddress();
+
+      setWalletAddress(currentWalletAddress);
+
 
       console.log("Connected wallet:", currentWalletAddress);
       console.log("OrderFactory address:", orderFactoryAddress);
@@ -160,6 +287,7 @@ function Main() {
       alert("Failed to load orders. Check the browser console (F12).");
     }
   };
+
 
 
   /*
@@ -293,118 +421,211 @@ function Main() {
       else alert(err.message);
       setStatusMessage("Error: Check console for details");
     }
-};
+  };
+
+  const handleListSelectedClick = (index) => { 
+    setSelectedIndex(index)
+  }
+
+
+
 
   /*
    * The rendered layout groups the app into three user-facing views: connection status,
    * blockchain and backend metadata, and the discovered order list.
    */
   return (
-    <div style={styles.container}>
-      <h1>Government Supply Chain App</h1>
+    <Box sx={{ display: 'flex' }}>
+      <Drawer
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+        variant="permanent"
+        anchor="left"
+      >
+        <Divider sx ={{ my: 2, width: '80%', alignSelf: 'center'}} />
+          <List>
+            {['Buisness Registry', 'Contracts', 'Stats', 'Debug'].map((text, index) => (
+              <ListItem key={text} disablePadding>
+              <ListItemButton
+                selected={selectedIndex === index}
+                onClick={() => handleListSelectedClick(index)}
+              >
+                  <ListItemIcon>
+                    {index === 0 ? <BusinessIcon /> : index === 1 ? <DescriptionIcon /> : index === 2 ? <TrendingUpIcon />  : <SettingsIcon/>}
+                  </ListItemIcon>
+                  <ListItemText primary={text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
 
-      <button style={styles.button} onClick={connectAndLoadOrders}>
-        Connect Wallet & Load Orders
-      </button>
+          <Box sx={{ flexGrow: 1 }} />
+          <Divider sx ={{ my: 2, width: '80%', alignSelf: 'center'}} />
 
-      <button style={{ ...styles.button, marginLeft: "10px" }} onClick={loadBusinesses}>
-        Test Database
-      </button>
+          <Box sx = {{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1}}> 
+            <Typography sx={{display: 'flex', alignItems: 'center', gap: 0.3}}>
+              Connection Status
+            </Typography>
+            
+            <Box sx = {{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1}}> 
+              <Typography sx={{display: 'flex', alignItems: 'center', gap: 0.3}}>
+                <CircleIcon sx={{ color: walletColor}}/>
+                Wallet
+              </Typography>
+              
+              <Typography sx={{display: 'flex', alignItems: 'center', gap: 0.3}}>
+                <CircleIcon  sx={{ color: blockColor}}/>
+                BlockChain
+              </Typography>
 
-      <button style={{ ...styles.button, marginLeft: "10px" }} onClick={testFunction}>
-        Test Function
-      </button>
+              <Typography sx={{display: 'flex', alignItems: 'center', gap: 0.3}}>
+                <CircleIcon  sx={{ color: dbColor}}/>
+                DataBase
+              </Typography>
+            </Box>
+          </Box>
 
-      <div style={styles.card}>
-        <h2>Status</h2>
-        <p>{statusMessage}</p>
-      </div>
+      </Drawer>
 
-      <div style={styles.card}>
-        <h2>Connection Info</h2>
-        <p><strong>Wallet Address:</strong> {walletAddress || "Not connected"}</p>
-        <p><strong>Network:</strong> {networkInfo || "Not connected"}</p>
-        <p><strong>OrderFactory Address:</strong> {orderFactoryAddress}</p>
-        <p><strong>Total Orders:</strong> {orderAddresses.length}</p>
-        
-      </div>
+      {selectedIndex === 0 &&
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <h1>Buisness Registry</h1>
+        </Box>
+      }
 
-      <div style={styles.card}>
-        <h2>Database Test</h2>
-        <p>{dbStatus || "Click 'Test Database' to check"}</p>
-        {businessData && (
-          <div>
-            <h3>Businesses:</h3>
-            <ul>
-              {businessData.map((b, i) => (
-                <li key={i}>{b.name} (ID: {b.id})</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+     {selectedIndex === 1 &&
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <h1>Contracts</h1>
+        </Box>
+      
+      }
+    
 
-      <div style={styles.card}>
-        <h2>Order Details</h2>
+      {selectedIndex === 2 &&
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <h1>Stats</h1>
+        </Box>
+      }
+    
+      {selectedIndex === 3 &&
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
 
-        {order ? (
-          <>
-            <p><strong>Business Address:</strong> {order.businessAddress}</p>
-            <p><strong>Payment Status:</strong> {order.paymentStatus ? "Paid" : "Unpaid"}</p>
-            <p><strong>Fulfillment Status:</strong> {order.fulfillmentStatus ? "Fulfilled" : "Not Fulfilled"}</p>
-            <h3>Procurement Vendor Details</h3>
-            {selectedBusiness ? (
-              <div style={styles.businessBox}>
-                <p><strong>Business Name:</strong> {selectedBusiness.business_name}</p>
-                <p><strong>Registration #:</strong> {selectedBusiness.registration_number}</p>
-                <p><strong>Business Type:</strong> {selectedBusiness.business_type}</p>
-                <p><strong>Contact Email:</strong> {selectedBusiness.contact_email}</p>
-                <p><strong>Phone:</strong> {selectedBusiness.phone_number}</p>
-                <p>
-                  <strong>Address:</strong>{" "}
-                  {selectedBusiness.street_address}, {selectedBusiness.city},{" "}
-                  {selectedBusiness.state_province} {selectedBusiness.postal_code},{" "}
-                  {selectedBusiness.country}
-                </p>
-              </div>
-            ) : (
-              <p>No business details loaded for this vendor yet.</p>
-            )}
-            <h3>Items</h3>
-            <ul>
-              {order.itemNames.map((name, index) => (
-                <li key={index}>
-                  {name} — Qty: {order.itemQuantities[index]} — Price: {order.itemPrices[index]}
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <p>No order selected</p>
-        )}
-      </div>
+        <h1>Government Supply Chain App</h1>
 
-      <h2>All Orders</h2>
+        <button style={styles.button} onClick={connectwallet}>
+          Connect Wallet
+        </button>
 
-      {orderAddresses.length > 0 ? (
-        orderAddresses.map((address, index) => (
-          <div key={index} style={styles.card}>
-            <p><strong>Order #{index + 1}</strong></p>
-            <p><strong>Order Contract Address:</strong> {address}</p>
-          </div>
-        ))
-      ) : (
+        <button style={{ ...styles.button, marginLeft: "10px" }}  onClick={LoadOrders}>
+          Load Orders
+        </button>
+
+        <button style={{ ...styles.button, marginLeft: "10px" }} onClick={loadBusinesses}>
+          Test Database
+        </button>
+
+        <button style={{ ...styles.button, marginLeft: "10px" }} onClick={testFunction}>
+          Test Function
+        </button>
+
         <div style={styles.card}>
-          <p>No orders found yet.</p>
+          <h2>Status</h2>
+          <p>{statusMessage}</p>
         </div>
-      )}
-    </div>
+
+        <div style={styles.card}>
+          <h2>Connection Info</h2>
+          <p><strong>Wallet Address:</strong> {walletAddress || "Not connected"}</p>
+          <p><strong>Network:</strong> {networkInfo || "Not connected"}</p>
+          <p><strong>OrderFactory Address:</strong> {orderFactoryAddress}</p>
+          <p><strong>Total Orders:</strong> {orderAddresses.length}</p>
+          
+        </div>
+
+        <div style={styles.card}>
+          <h2>Database Test</h2>
+          <p>{dbStatus || "Click 'Test Database' to check"}</p>
+          {businessData && (
+            <div>
+              <h3>Businesses:</h3>
+              <ul>
+                {businessData.map((b, i) => (
+                  <li key={i}>{b.name} (ID: {b.id})</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div style={styles.card}>
+          <h2>Order Details</h2>
+
+          {order ? (
+            <>
+              <p><strong>Business Address:</strong> {order.businessAddress}</p>
+              <p><strong>Payment Status:</strong> {order.paymentStatus ? "Paid" : "Unpaid"}</p>
+              <p><strong>Fulfillment Status:</strong> {order.fulfillmentStatus ? "Fulfilled" : "Not Fulfilled"}</p>
+              <h3>Procurement Vendor Details</h3>
+              {selectedBusiness ? (
+                <div style={styles.businessBox}>
+                  <p><strong>Business Name:</strong> {selectedBusiness.business_name}</p>
+                  <p><strong>Registration #:</strong> {selectedBusiness.registration_number}</p>
+                  <p><strong>Business Type:</strong> {selectedBusiness.business_type}</p>
+                  <p><strong>Contact Email:</strong> {selectedBusiness.contact_email}</p>
+                  <p><strong>Phone:</strong> {selectedBusiness.phone_number}</p>
+                  <p>
+                    <strong>Address:</strong>{" "}
+                    {selectedBusiness.street_address}, {selectedBusiness.city},{" "}
+                    {selectedBusiness.state_province} {selectedBusiness.postal_code},{" "}
+                    {selectedBusiness.country}
+                  </p>
+                </div>
+              ) : (
+                <p>No business details loaded for this vendor yet.</p>
+              )}
+              <h3>Items</h3>
+              <ul>
+                {order.itemNames.map((name, index) => (
+                  <li key={index}>
+                    {name} — Qty: {order.itemQuantities[index]} — Price: {order.itemPrices[index]}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p>No order selected</p>
+          )}
+        </div>
+
+        <h2>All Orders</h2>
+
+        {orderAddresses.length > 0 ? (
+          orderAddresses.map((address, index) => (
+            <div key={index} style={styles.card}>
+              <p><strong>Order #{index + 1}</strong></p>
+              <p><strong>Order Contract Address:</strong> {address}</p>
+            </div>
+          ))
+        ) : (
+          <div style={styles.card}>
+            <p>No orders found yet.</p>
+          </div>
+        )}
+        </Box>
+      }
+
+    </Box>
   );
 }
 
 const styles = {
   container: {
-    padding: "20px",
     fontFamily: "Arial, sans-serif",
   },
   button: {
