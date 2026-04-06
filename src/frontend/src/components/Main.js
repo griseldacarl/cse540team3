@@ -18,7 +18,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import Box from '@mui/material/Box';
 import Typography from "@mui/material/Typography";
 import CircleIcon from '@mui/icons-material/Circle';
-
+import BusinessRegistry from './BusinessRegistry';
 
 
 //How wide the side drawer is
@@ -494,9 +494,7 @@ function Main() {
       </Drawer>
 
       {selectedIndex === 0 &&
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <h1>Business Registry</h1>
-        </Box>
+        <BusinessRegistry></BusinessRegistry>
       }
 
      {selectedIndex === 1 &&
