@@ -11,7 +11,6 @@ import Typography from "@mui/material/Typography";
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
@@ -61,6 +60,18 @@ function BusinessRegistry() {
             </Paper>
         </Box>
     )
+
+    function updateWalletAddress(oldAddress, newAddress) {
+        // TODO: Update wallet for business logic
+    }
+
+    function registerBusiness(name, id, wallet) {
+        // TODO: Register business logic
+    }
+
+    function searchBusiness(input, byType) {
+        // TODO: Search business logic
+    }
 }
 
 export default BusinessRegistry;
