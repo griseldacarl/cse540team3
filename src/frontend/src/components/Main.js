@@ -450,7 +450,7 @@ function Main() {
       >
         <Divider sx ={{ my: 2, width: '80%', alignSelf: 'center'}} />
           <List>
-            {['Buisness Registry', 'Contracts', 'Stats', 'Debug'].map((text, index) => (
+            {['Business Registry', 'Contracts', 'Stats', 'Debug'].map((text, index) => (
               <ListItem key={text} disablePadding>
               <ListItemButton
                 selected={selectedIndex === index}
@@ -495,7 +495,7 @@ function Main() {
 
       {selectedIndex === 0 &&
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <h1>Buisness Registry</h1>
+          <h1>Business Registry</h1>
         </Box>
       }
 
