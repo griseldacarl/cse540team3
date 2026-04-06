@@ -50,6 +50,7 @@ function BusinessRegistry() {
                     <TextField label="Business Name"></TextField>
                     <TextField label="Business ID"></TextField>
                     <TextField label="Wallet Address"></TextField>
+                    <Button variant='contained' sx={{width: '25%'}}>Register</Button>
                 </Box>
             </Paper>
 
@@ -58,6 +59,7 @@ function BusinessRegistry() {
                     <Typography sx={{ fontWeight: 'bold' }} >Update business wallet address</Typography>
                     <TextField label="Current Wallet Address"></TextField>
                     <TextField label="New Wallet Address"></TextField>
+                    <Button variant='contained' sx={{width: '25%'}}>Update address</Button>
                 </Box>
             </Paper>
         </Box>
