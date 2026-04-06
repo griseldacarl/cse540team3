@@ -14,6 +14,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
 function BusinessRegistry() {
     // Use to make admin functions greyed out
     const [isAdmin, setIsAdmin] = useState(false);
@@ -37,6 +38,7 @@ function BusinessRegistry() {
                         </FormControl>
                         <Button variant="contained">Search</Button>
                     </Box>
+                    <BusinessCard></BusinessCard>
                 </Box>
 
             </Paper>
@@ -72,6 +74,16 @@ function BusinessRegistry() {
     function searchBusiness(input, byType) {
         // TODO: Search business logic
     }
+}
+
+function BusinessCard(props) {
+    return (
+        <Card sx={{ display: 'flex', width: 350, height: 150, flexDirection: 'column', gap: 2, flexGrow: 1, padding: 2 }}>
+            <Typography>Name: Meow Meow Clinic</Typography>
+            <Typography>ID: 239823892823</Typography>
+            <Typography>Wallet: 0x9238238932893289239392</Typography>
+        </Card>
+    )
 }
 
 export default BusinessRegistry;
