@@ -21,8 +21,7 @@ function BusinessRegistry() {
         <Box>
             <Box sx={{display: 'flex', alignItems: 'center'}}>
                 <FormControl> 
-                <TextField></TextField>
-                <InputLabel>Search for a business</InputLabel>
+                <TextField label="Search for a business"></TextField>
             </FormControl>
             <Typography> by ...</Typography>
             <FormControl>
@@ -35,8 +34,20 @@ function BusinessRegistry() {
             </Box>
             
             <Typography>Register a business</Typography>
-            
+            <Box sx={{display: 'flex'}}>
+                <FormControl>
+                    <TextField label="Business Name"></TextField>
+                    <TextField label="Business ID"></TextField>
+                    <TextField label="Wallet Address"></TextField>
+                </FormControl>
+            </Box>
             <Typography>Update business wallet address</Typography>
+            <Box sx={{display: 'flex'}}>
+                <FormControl>
+                    <TextField label="Current Wallet Address"></TextField>
+                    <TextField label="New Wallet Address"></TextField>
+                </FormControl>
+            </Box>
         </Box>
     )
 }
