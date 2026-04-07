@@ -23,6 +23,7 @@ function BusinessRegistry() {
     const [searchParam, setSearchParam] = useState("");
     const [searchBy, setSearchBy] = useState("name");
     const [searchResult, setSearchResult] = useState(null);
+    const [lastSearch, setLastSearch] = useState(null);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
@@ -41,10 +42,12 @@ function BusinessRegistry() {
                                 <MenuItem value="wallet">Wallet</MenuItem>
                             </Select>
                         </FormControl>
-                        <Button variant="contained" onClick={async () => {setSearchResult(await searchBusiness(searchParam, searchBy))} }>Search</Button>
+                        <Button variant="contained" onClick={async () => {setLastSearch(searchParam); setSearchResult(await searchBusiness(searchParam, searchBy))} }>Search</Button>
                     </Box>
 
-                    {searchResult ? <BusinessCard searchResult={searchResult}></BusinessCard> : null}
+                    {searchResult && <BusinessCard searchResult={searchResult}></BusinessCard>}
+                    {!searchResult && !lastSearch && <Typography>No results found.</Typography>}
+                    {!searchResult && lastSearch && <Typography> No results found for "{lastSearch}".</Typography>}
                 </Box>
 
             </Paper>
@@ -128,13 +131,12 @@ function BusinessRegistry() {
                 console.log("Data:", data);
                 return data;
             }
-            else {
-                return "Failed";
+            else if (!result.ok) {
+                return null;
             }
         }
         catch (error) {
-            console.error("Error:", error);
-            return "Failed";
+            return null;
         }
     } 
 }
