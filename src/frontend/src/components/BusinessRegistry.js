@@ -15,13 +15,14 @@ import Select from '@mui/material/Select';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import MenuItem from '@mui/material/MenuItem';
 function BusinessRegistry() {
     // Use to make admin functions greyed out
     const [isAdmin, setIsAdmin] = useState(false);
 
     const [searchParam, setSearchParam] = useState("");
     const [searchBy, setSearchBy] = useState("name");
-    const [searchResults, setSearchResults] = useState(null);
+    const [searchResult, setSearchResult] = useState(null);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
@@ -30,19 +31,20 @@ function BusinessRegistry() {
                     <Typography sx={{ fontWeight: 'bold' }}>Business Registry</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
                         <FormControl>
-                            <TextField label="Search for a business"></TextField>
+                            <TextField onChange={(e) => setSearchParam(e.target.value)} label="Search for a business"></TextField>
                         </FormControl>
                         <Typography> by ...</Typography>
                         <FormControl>
-                            <Select native>
-                                <option value="name">Name</option>
-                                <option value="id">ID</option>
-                                <option value="wallet">Wallet</option>
+                            <Select sx={{ width: 100 }}  onChange={(e) => setSearchBy(e.target.value)}>
+                                <MenuItem value="name">Name</MenuItem>
+                                <MenuItem value="id">ID</MenuItem>
+                                <MenuItem value="wallet">Wallet</MenuItem>
                             </Select>
                         </FormControl>
-                        <Button variant="contained">Search</Button>
+                        <Button variant="contained" onClick={async () => {setSearchResult(await searchBusiness(searchParam, searchBy))} }>Search</Button>
                     </Box>
-                    <BusinessCard></BusinessCard>
+
+                    {searchResult ? <BusinessCard searchResult={searchResult}></BusinessCard> : null}
                 </Box>
 
             </Paper>
@@ -139,10 +141,13 @@ function BusinessRegistry() {
 
     function BusinessCard(props) {
         return (
-            <Card sx={{ display: 'flex', width: 350, height: 150, flexDirection: 'column', gap: 2, flexGrow: 1, padding: 2 }}>
-                <Typography>Name: Meow Meow Clinic</Typography>
-                <Typography>ID: 239823892823</Typography>
-                <Typography>Wallet: 0x9238238932893289239392</Typography>
+            <Card sx={{ display: 'flex', width: 400, height: 250, flexDirection: 'column', gap: 2, flexGrow: 1, padding: 2 }}>
+                <Typography sx={{ fontWeight: 'bold' }}>Name:</Typography>
+                <Typography>{props.searchResult.business_name}</Typography>
+                <Typography sx={{ fontWeight: 'bold' }}>ID:</Typography>
+                <Typography>{props.searchResult.id}</Typography>
+                <Typography sx={{ fontWeight: 'bold' }}>Wallet:</Typography>
+                <Typography>{props.searchResult.wallet_address}</Typography>
             </Card>
         )
     }
