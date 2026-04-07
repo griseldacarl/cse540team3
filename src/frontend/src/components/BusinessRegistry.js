@@ -19,6 +19,10 @@ function BusinessRegistry() {
     // Use to make admin functions greyed out
     const [isAdmin, setIsAdmin] = useState(false);
 
+    const [searchParam, setSearchParam] = useState("");
+    const [searchBy, setSearchBy] = useState("name");
+    const [searchResults, setSearchResults] = useState(null);
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
             <Paper sx={{ p: 3, elevation: 6 }}>
