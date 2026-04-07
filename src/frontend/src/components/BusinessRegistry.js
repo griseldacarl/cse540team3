@@ -67,15 +67,45 @@ function BusinessRegistry() {
 
     function updateWalletAddress(oldAddress, newAddress) {
         // TODO: Update wallet for business logic
+
+        // Verify that the old address matches a current business.
+
+        // Update the business wallet in DB.
+
+        // Upon success, update the blockchain.
+
+        // Some indicator of success in the UI.  
     }
 
     function registerBusiness(name, id, wallet) {
         // TODO: Register business logic
+
+        // Add to database.
+
+        // Upon success, add to blockchain.
+
+        // Some indicator of success in the UI.  
+
     }
 
     function searchBusiness(input, byType) {
         // TODO: Search business logic
+
+        switch (byType) {
+            case 'name':
+                // Either query DB or use blockchain function
+                break;
+            case 'id':
+                // Either query DB or use blockchain function
+                break;
+            case 'wallet':
+                // Either query DB or use blockchain function
+                break;
+            default:
+                return "Failed";
+        }
     }
+
 }
 
 function BusinessCard(props) {
