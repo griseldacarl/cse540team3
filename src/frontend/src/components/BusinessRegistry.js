@@ -50,7 +50,7 @@ function BusinessRegistry() {
                     <TextField label="Business Name"></TextField>
                     <TextField label="Business ID"></TextField>
                     <TextField label="Wallet Address"></TextField>
-                    <Button variant='contained' sx={{width: '25%'}}>Register</Button>
+                    <Button variant='contained' sx={{ width: '25%' }}>Register</Button>
                 </Box>
             </Paper>
 
@@ -59,7 +59,7 @@ function BusinessRegistry() {
                     <Typography sx={{ fontWeight: 'bold' }} >Update business wallet address</Typography>
                     <TextField label="Current Wallet Address"></TextField>
                     <TextField label="New Wallet Address"></TextField>
-                    <Button variant='contained' sx={{width: '25%'}}>Update address</Button>
+                    <Button variant='contained' sx={{ width: '25%' }}>Update address</Button>
                 </Box>
             </Paper>
         </Box>
@@ -98,34 +98,49 @@ function BusinessRegistry() {
     // router.get("/name/:name"
     async function searchBusiness(input, byType) {
         // TODO: Search business logic
-        let result;
-        switch (byType) {
-            case 'name':
-                // Either query DB or use blockchain function
-                result = await fetch();
-            case 'id':
-                // Either query DB or use blockchain function
-                result = await fetch();
-                break;
-            case 'wallet':
-                // Either query DB or use blockchain function
-                result = await fetch();
-                break;
-            default:
+        try {
+            let result;
+            switch (byType) {
+                case 'name':
+                    // Either query DB or use blockchain function
+                    result = await fetch("http://localhost:5001/api/businesses/name/" + input);
+                    break;
+                case 'id':
+                    // Either query DB or use blockchain function
+                    result = await fetch("http://localhost:5001/api/businesses/id/" + input);
+                    break;
+                case 'wallet':
+                    // Either query DB or use blockchain function
+                    result = await fetch("http://localhost:5001/api/businesses/wallet/" + input);
+                    break;
+                default:
+                    break;
+            }
+
+            if (result.ok) {
+                const data = await result.json();
+                console.log("Data:", data);
+                return data;
+            }
+            else {
                 return "Failed";
+            }
         }
+        catch (error) {
+            console.error("Error:", error);
+            return "Failed";
+        }
+    } 
+}
+
+    function BusinessCard(props) {
+        return (
+            <Card sx={{ display: 'flex', width: 350, height: 150, flexDirection: 'column', gap: 2, flexGrow: 1, padding: 2 }}>
+                <Typography>Name: Meow Meow Clinic</Typography>
+                <Typography>ID: 239823892823</Typography>
+                <Typography>Wallet: 0x9238238932893289239392</Typography>
+            </Card>
+        )
     }
 
-}
-
-function BusinessCard(props) {
-    return (
-        <Card sx={{ display: 'flex', width: 350, height: 150, flexDirection: 'column', gap: 2, flexGrow: 1, padding: 2 }}>
-            <Typography>Name: Meow Meow Clinic</Typography>
-            <Typography>ID: 239823892823</Typography>
-            <Typography>Wallet: 0x9238238932893289239392</Typography>
-        </Card>
-    )
-}
-
-export default BusinessRegistry;
+    export default BusinessRegistry;
