@@ -65,11 +65,17 @@ function BusinessRegistry() {
         </Box>
     )
 
-    function updateWalletAddress(oldAddress, newAddress) {
+    async function updateWalletAddress(oldAddress, newAddress) {
         // TODO: Update wallet for business logic
 
         // Verify that the old address matches a current business.
-
+        try {
+            // Query DB for business with wallet
+        }
+        catch (error) {
+            // If no business found, return error.
+            return "Failed";
+        }
         // Update the business wallet in DB.
 
         // Upon success, update the blockchain.
@@ -77,7 +83,7 @@ function BusinessRegistry() {
         // Some indicator of success in the UI.  
     }
 
-    function registerBusiness(name, id, wallet) {
+    async function registerBusiness(name, id, wallet) {
         // TODO: Register business logic
 
         // Add to database.
@@ -87,19 +93,23 @@ function BusinessRegistry() {
         // Some indicator of success in the UI.  
 
     }
-
-    function searchBusiness(input, byType) {
+    // router.get("/wallet/:wallet"
+    // router.get("/id/:id"
+    // router.get("/name/:name"
+    async function searchBusiness(input, byType) {
         // TODO: Search business logic
-
+        let result;
         switch (byType) {
             case 'name':
                 // Either query DB or use blockchain function
-                break;
+                result = await fetch();
             case 'id':
                 // Either query DB or use blockchain function
+                result = await fetch();
                 break;
             case 'wallet':
                 // Either query DB or use blockchain function
+                result = await fetch();
                 break;
             default:
                 return "Failed";
