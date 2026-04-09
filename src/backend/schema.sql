@@ -5,7 +5,6 @@ USE government_supply_chain;
 
 CREATE TABLE businesses (
     id VARCHAR(100) PRIMARY KEY,
-    wallet_address VARCHAR(42) NOT NULL UNIQUE,
     business_name VARCHAR(255) NOT NULL UNIQUE,
     registration_number VARCHAR(100) NOT NULL UNIQUE,
     business_type VARCHAR(100),
@@ -23,7 +22,6 @@ CREATE TABLE businesses (
 
 INSERT INTO businesses (
     id,
-    wallet_address,
     business_name,
     registration_number,
     business_type,
@@ -38,7 +36,6 @@ INSERT INTO businesses (
 ) VALUES
 (
     'BIZ-001',
-    '0x1111111111111111111111111111111111111111',
     'Rocky Mountain Office Supply',
     'REG-1001',
     'Office Supplies',
@@ -53,7 +50,6 @@ INSERT INTO businesses (
 ),
 (
     'BIZ-002',
-    '0x2222222222222222222222222222222222222222',
     'Front Range Tech Solutions',
     'REG-1002',
     'Technology Services',
@@ -68,7 +64,6 @@ INSERT INTO businesses (
 ),
 (
     'BIZ-003',
-    '0x3333333333333333333333333333333333333333',
     'Pikes Peak Construction Group',
     'REG-1003',
     'Construction',

@@ -47,30 +47,6 @@ router.get("/id/:id", async (req, res) => {
 });
 
 /*
- * GET business by wallet address
- * Example: /api/businesses/wallet/0x3333333333333333333333333333333333333333
- */
-router.get("/wallet/:wallet", async (req, res) => {
-  try {
-    const { wallet } = req.params;
-
-    const [rows] = await db.query(
-      "SELECT * FROM businesses WHERE wallet_address = ?",
-      [wallet]
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Business not found" });
-    }
-
-    res.json(rows[0]);
-  } catch (error) {
-    console.error("Error fetching business by wallet:", error);
-    res.status(500).json({ error: "Failed to fetch business by wallet" });
-  }
-});
-
-/*
  * GET business by business name
  * Example: /api/businesses/name/Pikes%20Peak%20Construction%20Group
  */
@@ -98,7 +74,6 @@ router.get("/name/:name", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const {
-      wallet_address,
       business_name,
       registration_number,
       business_type,
@@ -113,10 +88,9 @@ router.post("/", async (req, res) => {
 
     const [result] = await db.query(
       `INSERT INTO businesses
-      (wallet_address, business_name, registration_number, business_type, contact_email, phone_number, street_address, city, state_province, postal_code, country)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ( business_name, registration_number, business_type, contact_email, phone_number, street_address, city, state_province, postal_code, country)
+      VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        wallet_address,
         business_name,
         registration_number,
         business_type,
