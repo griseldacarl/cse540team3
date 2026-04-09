@@ -1,27 +1,54 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import { ethers } from "ethers";
+
+// Contract config
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
-import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI"
 import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
-import { ethers } from "ethers";
-import Drawer from '@mui/material/Drawer';
-import Divider from '@mui/material/Divider';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import BusinessIcon from '@mui/icons-material/Business';
-import SettingsIcon from '@mui/icons-material/Settings'
-import DescriptionIcon from '@mui/icons-material/Description';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import Box from '@mui/material/Box';
-import Typography from "@mui/material/Typography";
-import CircleIcon from '@mui/icons-material/Circle';
-import BusinessRegistry from './BusinessRegistry';
-import Card from "@mui/material/Card";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, elements, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
-import { Pie, Bar } from 'react-chartjs-2';
+import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI";
+
+// MUI components
+import {
+  Paper,
+  Box,
+  Typography,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Drawer,
+  Divider,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Card,
+} from "@mui/material";
+
+// MUI icons
+import BusinessIcon from "@mui/icons-material/Business";
+import SettingsIcon from "@mui/icons-material/Settings";
+import DescriptionIcon from "@mui/icons-material/Description";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import CircleIcon from "@mui/icons-material/Circle";
+
+// Local components
+import BusinessRegistry from "./BusinessRegistry";
+
+// Chart.js
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+} from "chart.js";
+import { Pie, Bar } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -51,7 +78,7 @@ function Main() {
   const [orderAddresses, setOrderAddresses] = useState([]);
   const [statusMessage, setStatusMessage] = useState("Not connected");
   const [networkInfo, setNetworkInfo] = useState("");
-  const [businessData, setBusinessData] = useState(null);
+  const [businessData, setBusinessData] = useState([]);
   const [dbStatus, setDbStatus] = useState("");
   // this is for testing order details
   const [order, setOrder] = useState(null);
@@ -146,23 +173,6 @@ function Main() {
       console.error("Failed to load businesses:", error);
       setDbStatus(`Database test failed: ${error.message}`);
       setBusinessData(null);
-    }
-  };
-
-  const loadBusinessByWallet = async (walletAddress) => {
-    try {
-      const response = await fetch(`http://localhost:5001/api/businesses/wallet/${walletAddress}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const data = await response.json();
-      console.log("Business by wallet:", data);
-
-      setSelectedBusiness(data);   // <-- important
-      return data;
-    } catch (error) {
-      console.error("Failed to load business by wallet:", error);
-      setSelectedBusiness(null);
-      return null;
     }
   };
 
@@ -434,8 +444,6 @@ function Main() {
       };
 
     setOrder(formattedOrder)
-
-    loadBusinessByWallet(details[0]);
     } catch (err) {
       console.error("Blockchain function error:", err);
       if (err.reason) alert(err.reason);
