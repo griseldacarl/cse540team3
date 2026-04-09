@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
 import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI"
@@ -18,6 +18,20 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import Box from '@mui/material/Box';
 import Typography from "@mui/material/Typography";
 import CircleIcon from '@mui/icons-material/Circle';
+import Card from "@mui/material/Card";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, elements, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Title,
+  Tooltip,
+  Legend
+);
 
 
 
@@ -47,11 +61,17 @@ function Main() {
   const [blockColor, setblockColor] = useState("Red");
   const [dbColor, setDbColor] = useState("Red");
   const [selectedIndex, setSelectedIndex] = useState(3);
+  const [uniqueBusinesses, setUniqueBusinesses] = useState([]);
+  const [bizTypeData, setBizTypeData] = useState(null)
+  const [approveBizData, setBizApproveData] = useState(null)
 
 
   //Check statuses on startup
   useEffect(() => {
     loadConnections();
+    loadUniqueBiz();
+    loadBizType();
+    loadApproved();
 
   }, []);
 
@@ -427,7 +447,102 @@ function Main() {
     setSelectedIndex(index)
   }
 
+  const loadUniqueBiz = async () => {
+      const response = await fetch("http://localhost:5001/api/businesses");
+      console.log("Response from database: ", response);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
 
+      const seen = new Set();
+      const unique = data.filter(element => {
+        if (seen.has(element.business_name)) return false;
+        seen.add(element.business_name);
+        return true;
+      });
+
+      setUniqueBusinesses(unique);
+  };
+
+
+  const loadBizType = async () => {
+      const response = await fetch("http://localhost:5001/api/businesses");
+      console.log("Response from database: ", response);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const jsonData = await response.json();
+
+      const typeCounts = {}
+      jsonData.forEach(element =>{
+        typeCounts[element.business_type] = (typeCounts[element.business_type] ?? 0) + 1;
+      });
+
+      const labels = Object.keys(typeCounts)
+      const counts = Object.values(typeCounts)
+
+      const data = {
+        labels: labels,
+        datasets: [
+          {
+            label: '# of biz type',
+            data: counts,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(54, 162, 235, 0.2)',
+              'rgba(255, 206, 86, 0.2)',
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(153, 102, 255, 0.2)',
+              'rgba(255, 159, 64, 0.2)',
+            ],
+            borderColor: [
+              'rgba(255, 99, 132, 1)',
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 206, 86, 1)',
+              'rgba(75, 192, 192, 1)',
+              'rgba(153, 102, 255, 1)',
+              'rgba(255, 159, 64, 1)',
+            ],
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      setBizTypeData(data)
+  };
+
+  const loadApproved = async () => {
+      const response = await fetch("http://localhost:5001/api/businesses");
+      console.log("Response from database: ", response);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const jsonData = await response.json();
+
+      const typeCounts = {}
+      jsonData.forEach(element =>{
+        typeCounts[element.is_approved] = (typeCounts[element.is_approved] ?? 0) + 1;
+      });
+
+      const labels = ["Not Approved", "Approved"]
+      
+      const counts = Object.values(typeCounts)
+
+        const data = {
+        labels,
+        datasets: [
+          {
+            data: counts,
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.2)',
+              'rgba(255, 99, 132, 0.2)',
+            ],
+            borderColor: [
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 99, 132, 1)',
+            ],
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      setBizApproveData(data)
+  };
 
 
   /*
@@ -510,6 +625,41 @@ function Main() {
       {selectedIndex === 2 &&
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <h1>Stats</h1>
+
+          <Box sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box sx={{ flexGrow: 1, p: 3 }}>
+              <Card sx={{ width: 500 }}>
+                <Typography sx={{margin: 'center', fontWeight: 'bold'}}>
+                  All Unique Buisnesses
+                </Typography>
+                <ul>
+                  {uniqueBusinesses.map((b, i) => (
+                    <li key={i}> (ID: {b.id}) {b.business_name}</li>
+                  ))}
+                </ul>
+              </Card>
+              </Box>
+              <Box sx={{ flexGrow: 1, p: 3 }}>
+              <Card>
+                <Typography sx={{margin: 'center', fontWeight: 'bold'}}>
+                  Buisness Types
+                </Typography>
+                <div style={{ width: '500px', height: '500px', position: 'center' }}>
+                  {bizTypeData && <Pie data={bizTypeData}/>}
+                </div>
+              </Card>
+              </Box>
+              <Box sx={{ flexGrow: 1, p: 3 }}>
+                <Card>
+                <Typography sx={{margin: 'center', fontWeight: 'bold'}}>
+                  Approved vs Pending Count
+                </Typography>
+                <div style={{ width: '500px', height: '500px', position: 'center' }}>
+                  {approveBizData && <Bar data={approveBizData} options={{ plugins: { legend: { display: false } } }} />}
+                </div>
+              </Card>
+            </Box>
+          </Box>
         </Box>
       }
     
