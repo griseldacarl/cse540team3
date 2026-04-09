@@ -18,6 +18,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import Box from '@mui/material/Box';
 import Typography from "@mui/material/Typography";
 import CircleIcon from '@mui/icons-material/Circle';
+import ContractsPage from "./ContractsPage";
 
 
 
@@ -500,10 +501,7 @@ function Main() {
       }
 
      {selectedIndex === 1 &&
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <h1>Contracts</h1>
-        </Box>
-      
+        <ContractsPage />
       }
     
 
