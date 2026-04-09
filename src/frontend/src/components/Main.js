@@ -355,10 +355,12 @@ function Main() {
       console.log("Using wallet:", currentWalletAddress);
       const exists = await businessRegistryContract.businessExists(business.business_name);
 
+      const testWalletAddress = "0x1111111111111111111111111111111111111111";
+
     if (!exists) {
       // Send a transaction to register the business
       const tx = await businessRegistryContract.registerBusiness(
-        business.wallet_address,
+        testWalletAddress,
         business.business_name,
         business.id
       );
@@ -388,7 +390,7 @@ function Main() {
         return;
       }
 
-      const vendorAddress = business.wallet_address;
+      const vendorAddress = testWalletAddress;
 
       const itemNames = [
         "Concrete Mix",
@@ -428,7 +430,7 @@ function Main() {
       setOrderAddresses(orders || []);
       setStatusMessage("Business registered and orders loaded successfully!");
 
-      const ordersForBusiness = await orderContract.getOrdersByBusiness(business.wallet_address);
+      const ordersForBusiness = await orderContract.getOrdersByBusiness(testWalletAddress);
       console.log("order addresses for a business:", ordersForBusiness);
 
       const details = await orderContract.getOrderDetail(ordersForBusiness[0]);
