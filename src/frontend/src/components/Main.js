@@ -18,6 +18,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import Box from '@mui/material/Box';
 import Typography from "@mui/material/Typography";
 import CircleIcon from '@mui/icons-material/Circle';
+import BusinessRegistry from './BusinessRegistry';
 import Card from "@mui/material/Card";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, elements, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
@@ -565,7 +566,7 @@ function Main() {
       >
         <Divider sx ={{ my: 2, width: '80%', alignSelf: 'center'}} />
           <List>
-            {['Buisness Registry', 'Contracts', 'Stats', 'Debug'].map((text, index) => (
+            {['Business Registry', 'Contracts', 'Stats', 'Debug'].map((text, index) => (
               <ListItem key={text} disablePadding>
               <ListItemButton
                 selected={selectedIndex === index}
@@ -609,9 +610,7 @@ function Main() {
       </Drawer>
 
       {selectedIndex === 0 &&
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <h1>Buisness Registry</h1>
-        </Box>
+        <BusinessRegistry></BusinessRegistry>
       }
 
      {selectedIndex === 1 &&
