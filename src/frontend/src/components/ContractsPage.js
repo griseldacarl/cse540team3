@@ -165,6 +165,8 @@ function ContractsPage() {
     }));
   };
 
+  
+
   const addItem = () => {
     setFormState((current) => ({
       ...current,
@@ -183,6 +185,7 @@ function ContractsPage() {
   };
 
   const createContract = async () => {
+    
     if (!selectedBusiness) {
       setCreateStatus("Choose a business before creating a contract.");
       return;
@@ -202,6 +205,13 @@ function ContractsPage() {
       setCreateStatus("Add at least one contract item.");
       return;
     }
+
+    console.log("CREATE DEBUG", {
+  wallet: selectedBusiness.wallet_address,
+  names: cleanedItems.map(i => i.name),
+  prices: cleanedItems.map(i => Number(i.price)),
+  quantities: cleanedItems.map(i => i.quantity),
+});
 
     const invalidItem = cleanedItems.find(
       (item) =>
@@ -253,8 +263,12 @@ function ContractsPage() {
         await registerTx.wait();
       }
 
+      const wallet_address = await registry.getBusinessByName(
+          selectedBusiness.business_name
+        );
+
       const createTx = await factory.createOrderContract(
-        selectedBusiness.wallet_address,
+        wallet_address,
         cleanedItems.map((item) => item.name),
         cleanedItems.map((item) => Number(item.price)),
         cleanedItems.map((item) => item.quantity)
