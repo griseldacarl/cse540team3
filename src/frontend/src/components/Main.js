@@ -5,7 +5,6 @@ import { ethers } from "ethers";
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
 import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
-import { ethers } from "ethers";
 import ContractsPage from "./ContractsPage";
 import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI";
 import BusinessRegistry from "./BusinessRegistry";
