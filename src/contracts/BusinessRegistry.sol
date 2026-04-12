@@ -74,9 +74,10 @@ contract BusinessRegistry {
     * Moves the business record to a new wallet and updates all reverse
     * lookup mappings so the registry remains consistent.
     */
-    function updateBusinessWallet(address oldWallet, address newWallet) public onlyAdmin {
+    function updateBusinessWallet(address oldWallet, address newWallet, string memory id) public onlyAdmin {
         require(oldWallet != address(0), "Invalid old wallet");
         require(newWallet != address(0), "Invalid new wallet");
+        require(getBusinessById(id) == oldWallet, "Wallet is incorrect for business");
         require(bytes(businesses[oldWallet].name).length > 0, "Old wallet not registered");
         require(bytes(businesses[newWallet].name).length == 0, "New wallet already registered");
 

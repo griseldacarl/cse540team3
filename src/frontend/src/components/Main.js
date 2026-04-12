@@ -1,24 +1,66 @@
 import React, { useState, useEffect } from "react";
+import { ethers } from "ethers";
+
+// Contract config
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
-import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI"
 import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
 import { ethers } from "ethers";
-import Drawer from '@mui/material/Drawer';
-import Divider from '@mui/material/Divider';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import BusinessIcon from '@mui/icons-material/Business';
-import SettingsIcon from '@mui/icons-material/Settings'
-import DescriptionIcon from '@mui/icons-material/Description';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import Box from '@mui/material/Box';
-import Typography from "@mui/material/Typography";
-import CircleIcon from '@mui/icons-material/Circle';
 import ContractsPage from "./ContractsPage";
+import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI";
+import BusinessRegistry from "./BusinessRegistry";
+
+// MUI components
+import {
+  Paper,
+  Box,
+  Typography,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Drawer,
+  Divider,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Card,
+} from "@mui/material";
+
+// MUI icons
+import BusinessIcon from "@mui/icons-material/Business";
+import SettingsIcon from "@mui/icons-material/Settings";
+import DescriptionIcon from "@mui/icons-material/Description";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import CircleIcon from "@mui/icons-material/Circle";
+
+
+// Chart.js
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+} from "chart.js";
+import { Pie, Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Title,
+  Tooltip,
+  Legend
+);
 
 
 
@@ -37,7 +79,7 @@ function Main() {
   const [orderAddresses, setOrderAddresses] = useState([]);
   const [statusMessage, setStatusMessage] = useState("Not connected");
   const [networkInfo, setNetworkInfo] = useState("");
-  const [businessData, setBusinessData] = useState(null);
+  const [businessData, setBusinessData] = useState([]);
   const [dbStatus, setDbStatus] = useState("");
   // this is for testing order details
   const [order, setOrder] = useState(null);
@@ -48,11 +90,17 @@ function Main() {
   const [blockColor, setblockColor] = useState("Red");
   const [dbColor, setDbColor] = useState("Red");
   const [selectedIndex, setSelectedIndex] = useState(3);
+  const [uniqueBusinesses, setUniqueBusinesses] = useState([]);
+  const [bizTypeData, setBizTypeData] = useState(null)
+  const [approveBizData, setBizApproveData] = useState(null)
 
 
   //Check statuses on startup
   useEffect(() => {
     loadConnections();
+    loadUniqueBiz();
+    loadBizType();
+    loadApproved();
 
   }, []);
 
@@ -126,23 +174,6 @@ function Main() {
       console.error("Failed to load businesses:", error);
       setDbStatus(`Database test failed: ${error.message}`);
       setBusinessData(null);
-    }
-  };
-
-  const loadBusinessByWallet = async (walletAddress) => {
-    try {
-      const response = await fetch(`http://localhost:5001/api/businesses/wallet/${walletAddress}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const data = await response.json();
-      console.log("Business by wallet:", data);
-
-      setSelectedBusiness(data);   // <-- important
-      return data;
-    } catch (error) {
-      console.error("Failed to load business by wallet:", error);
-      setSelectedBusiness(null);
-      return null;
     }
   };
 
@@ -325,10 +356,12 @@ function Main() {
       console.log("Using wallet:", currentWalletAddress);
       const exists = await businessRegistryContract.businessExists(business.business_name);
 
+      const testWalletAddress = "0x1111111111111111111111111111111111111111";
+
     if (!exists) {
       // Send a transaction to register the business
       const tx = await businessRegistryContract.registerBusiness(
-        business.wallet_address,
+        testWalletAddress,
         business.business_name,
         business.id
       );
@@ -358,7 +391,7 @@ function Main() {
         return;
       }
 
-      const vendorAddress = business.wallet_address;
+      const vendorAddress = testWalletAddress;
 
       const itemNames = [
         "Concrete Mix",
@@ -398,7 +431,7 @@ function Main() {
       setOrderAddresses(orders || []);
       setStatusMessage("Business registered and orders loaded successfully!");
 
-      const ordersForBusiness = await orderContract.getOrdersByBusiness(business.wallet_address);
+      const ordersForBusiness = await orderContract.getOrdersByBusiness(testWalletAddress);
       console.log("order addresses for a business:", ordersForBusiness);
 
       const details = await orderContract.getOrderDetail(ordersForBusiness[0]);
@@ -414,8 +447,6 @@ function Main() {
       };
 
     setOrder(formattedOrder)
-
-    loadBusinessByWallet(details[0]);
     } catch (err) {
       console.error("Blockchain function error:", err);
       if (err.reason) alert(err.reason);
@@ -428,7 +459,102 @@ function Main() {
     setSelectedIndex(index)
   }
 
+  const loadUniqueBiz = async () => {
+      const response = await fetch("http://localhost:5001/api/businesses");
+      console.log("Response from database: ", response);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
 
+      const seen = new Set();
+      const unique = data.filter(element => {
+        if (seen.has(element.business_name)) return false;
+        seen.add(element.business_name);
+        return true;
+      });
+
+      setUniqueBusinesses(unique);
+  };
+
+
+  const loadBizType = async () => {
+      const response = await fetch("http://localhost:5001/api/businesses");
+      console.log("Response from database: ", response);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const jsonData = await response.json();
+
+      const typeCounts = {}
+      jsonData.forEach(element =>{
+        typeCounts[element.business_type] = (typeCounts[element.business_type] ?? 0) + 1;
+      });
+
+      const labels = Object.keys(typeCounts)
+      const counts = Object.values(typeCounts)
+
+      const data = {
+        labels: labels,
+        datasets: [
+          {
+            label: '# of biz type',
+            data: counts,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(54, 162, 235, 0.2)',
+              'rgba(255, 206, 86, 0.2)',
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(153, 102, 255, 0.2)',
+              'rgba(255, 159, 64, 0.2)',
+            ],
+            borderColor: [
+              'rgba(255, 99, 132, 1)',
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 206, 86, 1)',
+              'rgba(75, 192, 192, 1)',
+              'rgba(153, 102, 255, 1)',
+              'rgba(255, 159, 64, 1)',
+            ],
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      setBizTypeData(data)
+  };
+
+  const loadApproved = async () => {
+      const response = await fetch("http://localhost:5001/api/businesses");
+      console.log("Response from database: ", response);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const jsonData = await response.json();
+
+      const typeCounts = {}
+      jsonData.forEach(element =>{
+        typeCounts[element.is_approved] = (typeCounts[element.is_approved] ?? 0) + 1;
+      });
+
+      const labels = ["Not Approved", "Approved"]
+      
+      const counts = Object.values(typeCounts)
+
+        const data = {
+        labels,
+        datasets: [
+          {
+            data: counts,
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.2)',
+              'rgba(255, 99, 132, 0.2)',
+            ],
+            borderColor: [
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 99, 132, 1)',
+            ],
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      setBizApproveData(data)
+  };
 
 
   /*
@@ -451,7 +577,7 @@ function Main() {
       >
         <Divider sx ={{ my: 2, width: '80%', alignSelf: 'center'}} />
           <List>
-            {['Buisness Registry', 'Contracts', 'Stats', 'Debug'].map((text, index) => (
+            {['Business Registry', 'Contracts', 'Stats', 'Debug'].map((text, index) => (
               <ListItem key={text} disablePadding>
               <ListItemButton
                 selected={selectedIndex === index}
@@ -495,9 +621,7 @@ function Main() {
       </Drawer>
 
       {selectedIndex === 0 &&
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <h1>Buisness Registry</h1>
-        </Box>
+        <BusinessRegistry></BusinessRegistry>
       }
 
      {selectedIndex === 1 &&
@@ -508,6 +632,41 @@ function Main() {
       {selectedIndex === 2 &&
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <h1>Stats</h1>
+
+          <Box sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box sx={{ flexGrow: 1, p: 3 }}>
+              <Card sx={{ width: 500 }}>
+                <Typography sx={{margin: 'center', fontWeight: 'bold'}}>
+                  All Unique Buisnesses
+                </Typography>
+                <ul>
+                  {uniqueBusinesses.map((b, i) => (
+                    <li key={i}> (ID: {b.id}) {b.business_name}</li>
+                  ))}
+                </ul>
+              </Card>
+              </Box>
+              <Box sx={{ flexGrow: 1, p: 3 }}>
+              <Card>
+                <Typography sx={{margin: 'center', fontWeight: 'bold'}}>
+                  Buisness Types
+                </Typography>
+                <div style={{ width: '500px', height: '500px', position: 'center' }}>
+                  {bizTypeData && <Pie data={bizTypeData}/>}
+                </div>
+              </Card>
+              </Box>
+              <Box sx={{ flexGrow: 1, p: 3 }}>
+                <Card>
+                <Typography sx={{margin: 'center', fontWeight: 'bold'}}>
+                  Approved vs Pending Count
+                </Typography>
+                <div style={{ width: '500px', height: '500px', position: 'center' }}>
+                  {approveBizData && <Bar data={approveBizData} options={{ plugins: { legend: { display: false } } }} />}
+                </div>
+              </Card>
+            </Box>
+          </Box>
         </Box>
       }
     
