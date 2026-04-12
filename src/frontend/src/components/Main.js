@@ -5,7 +5,10 @@ import { ethers } from "ethers";
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
 import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
+import { ethers } from "ethers";
+import ContractsPage from "./ContractsPage";
 import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI";
+import BusinessRegistry from "./BusinessRegistry";
 
 // MUI components
 import {
@@ -34,8 +37,6 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CircleIcon from "@mui/icons-material/Circle";
 
-// Local components
-import BusinessRegistry from "./BusinessRegistry";
 
 // Chart.js
 import {
@@ -624,10 +625,7 @@ function Main() {
       }
 
      {selectedIndex === 1 &&
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <h1>Contracts</h1>
-        </Box>
-      
+        <ContractsPage />
       }
     
 
