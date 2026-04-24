@@ -14,6 +14,8 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
+import { contractGovernmentAddress } from "../GovernmentABI/contractGovernmentAddress";
+import { contractGovernmentABI } from "../GovernmentABI/contractGovernmentABI";
 import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
 import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI";
 
@@ -81,6 +83,16 @@ function ContractsPage() {
     }
 
     return number.toLocaleString();
+  };
+
+
+  const getBusinessFromChain = async (walletAddress, registry) => {
+    const result = await registry.getBusinessByAddress(walletAddress);
+
+    return {
+      name: result.name,
+      id: result.id,
+    };
   };
 
   const loadBusinesses = async () => {
@@ -184,6 +196,54 @@ function ContractsPage() {
     }));
   };
 
+  const updateFulfillmentStatus = async (orderAddress, newStatus) => {
+    try {
+      if (!window.ethereum) throw new Error("No wallet found");
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const orderContract = new ethers.Contract(
+        orderAddress,
+        contractGovernmentABI,
+        signer
+      );
+
+      const tx = await orderContract.updateFulfillmentStatus(newStatus);
+      await tx.wait();
+
+      console.log("Fulfillment updated:", newStatus);
+
+      await loadContracts();
+    } catch (err) {
+      console.error("Error updating fulfillment status:", err);
+    }
+  };
+
+    const updatePaymentStatus = async (orderAddress, newStatus) => {
+    try {
+      if (!window.ethereum) throw new Error("No wallet found");
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const orderContract = new ethers.Contract(
+        orderAddress,
+        contractGovernmentABI,
+        signer
+      );
+
+      const tx = await orderContract.updatePaymentStatus(newStatus);
+      await tx.wait();
+
+      console.log("Payment updated:", newStatus);
+
+      await loadContracts();
+    } catch (err) {
+      console.error("Error updating payment status:", err);
+    }
+  };
+
   const createContract = async () => {
     
     if (!selectedBusiness) {
@@ -266,6 +326,8 @@ function ContractsPage() {
       const wallet_address = await registry.getBusinessByName(
           selectedBusiness.business_name
         );
+
+        console.log("Resolved wallet_address:", wallet_address);
 
       const createTx = await factory.createOrderContract(
         wallet_address,
@@ -485,11 +547,15 @@ function ContractsPage() {
       ) : (
         <Stack spacing={2}>
           {contracts.map((contract, index) => {
-            const business = businesses.find(
-              (entry) =>
-                entry.wallet_address?.toLowerCase() ===
-                contract.businessAddress.toLowerCase()
+            
+            const provider = getWalletProvider();
+
+            const registry = new ethers.Contract(
+              businessRegistryAddress,
+              businessRegistryABI,
+              provider
             );
+            const business = registry.getBusinessByAddress(contract.businessAddress);
 
             return (
               <Paper key={contract.id} sx={{ p: 3 }}>
@@ -501,7 +567,7 @@ function ContractsPage() {
                   Assigned wallet: {contract.businessAddress}
                 </Typography>
                 <Typography variant="body2">
-                  Business: {business?.business_name || "Not found in backend DB"}
+                  Business: {business?.name || "Not found in backend DB"}
                 </Typography>
                 <Typography variant="body2">
                   Payment status: {contract.paymentStatus ? "Paid" : "Unpaid"}
@@ -523,6 +589,32 @@ function ContractsPage() {
                           contract.itemPrices[itemIndex]
                         )}`}
                       />
+                      <Stack direction="row" spacing={2}>
+                        <Button
+                          variant="contained"
+                          color={contract.paymentStatus ? "warning" : "success"}
+                          onClick={() =>
+                            updatePaymentStatus(
+                              contract.address,
+                              !contract.paymentStatus
+                            )
+                          }
+                        >
+                          {contract.paymentStatus ? "Mark Unpayed" : "Mark Payed"}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color={contract.fulfillmentStatus ? "warning" : "success"}
+                          onClick={() =>
+                            updateFulfillmentStatus(
+                              contract.address,
+                              !contract.fulfillmentStatus
+                            )
+                          }
+                        >
+                          {contract.fulfillmentStatus ? "Mark Unfulfilled" : "Mark Fulfilled"}
+                        </Button>
+                      </Stack>
                     </ListItem>
                   ))}
                 </List>
