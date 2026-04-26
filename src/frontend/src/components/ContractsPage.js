@@ -14,7 +14,6 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
-import { contractGovernmentAddress } from "../GovernmentABI/contractGovernmentAddress";
 import { contractGovernmentABI } from "../GovernmentABI/contractGovernmentABI";
 import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
 import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI";
@@ -26,12 +25,15 @@ const ACCESS_MODES = {
 
 const READ_ONLY_RPC_URL = "http://127.0.0.1:8545";
 
+// Returns a blank contract item used to initialize or append rows in the form
 const createEmptyItem = () => ({
   name: "",
   quantity: "",
   price: "",
 });
 
+// Main page component responsible for displaying contracts, loading business data,
+// and handling contract creation + status updates via blockchain interactions
 function ContractsPage() {
   const [accessMode, setAccessMode] = useState(ACCESS_MODES.PUBLIC);
   const [contracts, setContracts] = useState([]);
@@ -53,6 +55,7 @@ function ContractsPage() {
     loadContracts();
   }, []);
 
+  // Derives the currently selected business object from the list using the selected wallet address
   const selectedBusiness = useMemo(
     () =>
       businesses.find(
@@ -61,8 +64,10 @@ function ContractsPage() {
     [businesses, formState.businessWallet]
   );
 
+  // Creates a read-only Ethereum provider for querying blockchain data without requiring a wallet
   const getReadProvider = () => new ethers.JsonRpcProvider(READ_ONLY_RPC_URL);
 
+  // Requests access to the user's wallet (MetaMask) and returns a provider for signed transactions
   const getWalletProvider = async () => {
     if (!window.ethereum) {
       throw new Error("MetaMask is required for government actions.");
@@ -73,9 +78,11 @@ function ContractsPage() {
     return provider;
   };
 
+  // Formats network metadata into a readable string (e.g., "localhost (chainId: 31337)")
   const formatNetwork = (network) =>
     `${network.name} (chainId: ${network.chainId.toString()})`;
 
+  // Converts a numeric price value into a locale-formatted string for display
   const formatPrice = (value) => {
     const number = Number(value);
     if (Number.isNaN(number)) {
@@ -85,16 +92,7 @@ function ContractsPage() {
     return number.toLocaleString();
   };
 
-
-  const getBusinessFromChain = async (walletAddress, registry) => {
-    const result = await registry.getBusinessByAddress(walletAddress);
-
-    return {
-      name: result.name,
-      id: result.id,
-    };
-  };
-
+  // Loads businesses from the backend API and enriches each with its on-chain wallet address
   const loadBusinesses = async () => {
     setBusinessesLoading(true);
 
@@ -105,7 +103,34 @@ function ContractsPage() {
       }
 
       const data = await response.json();
-      setBusinesses(data);
+
+      const provider = getReadProvider();
+      const registry = new ethers.Contract(
+        businessRegistryAddress,
+        businessRegistryABI,
+        provider
+      );
+
+      const enriched = await Promise.all(
+        data.map(async (business) => {
+          try {
+            const wallet = await registry.getBusinessById(business.id);
+
+            return {
+              ...business,
+              wallet_address: wallet,
+            };
+          } catch (err) {
+            console.warn("No wallet for business:", business.id);
+            return {
+              ...business,
+              wallet_address: null,
+            };
+          }
+        })
+      );
+
+      setBusinesses(enriched);
     } catch (error) {
       console.error("Failed to load businesses:", error);
       setPageError("Unable to load businesses from the backend.");
@@ -114,6 +139,16 @@ function ContractsPage() {
     }
   };
 
+  // Updates top-level form state fields (e.g., selected business wallet)
+  const updateForm = (field, value) => {
+    setFormState((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Fetches all deployed contract addresses from the factory and resolves their full details,
+  // including associated business info from the registry
   const loadContracts = async () => {
     setContractsLoading(true);
     setPageError("");
@@ -121,11 +156,19 @@ function ContractsPage() {
     try {
       const provider = getReadProvider();
       const network = await provider.getNetwork();
+
       const factory = new ethers.Contract(
         orderFactoryAddress,
         orderFactoryABI,
         provider
       );
+
+      const registry = new ethers.Contract(
+        businessRegistryAddress,
+        businessRegistryABI,
+        provider
+      );
+
       const admin = await factory.admin();
       const addresses = await factory.getAllOrders();
 
@@ -136,10 +179,20 @@ function ContractsPage() {
         addresses.map(async (address, index) => {
           const details = await factory.getOrderDetail(address);
 
+          let businessName = "Unknown";
+
+          try {
+            const business = await registry.getBusinessByAddress(details[0]);
+            businessName = business.name;
+          } catch (err) {
+            console.warn("Business lookup failed for:", details[0]);
+          }
+
           return {
             id: `${index}-${address}`,
             address,
             businessAddress: details[0],
+            businessName,
             itemNames: details[1],
             itemPrices: details[2].map((price) => price.toString()),
             itemQuantities: details[3],
@@ -161,13 +214,7 @@ function ContractsPage() {
     }
   };
 
-  const updateForm = (field, value) => {
-    setFormState((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  };
-
+  // Updates a specific field (name, quantity, price) for a given contract item in the form
   const updateItem = (index, field, value) => {
     setFormState((current) => ({
       ...current,
@@ -177,8 +224,7 @@ function ContractsPage() {
     }));
   };
 
-  
-
+  // Appends a new empty item row to the contract creation form
   const addItem = () => {
     setFormState((current) => ({
       ...current,
@@ -186,6 +232,7 @@ function ContractsPage() {
     }));
   };
 
+  // Removes an item from the form by index, ensuring at least one item always remains
   const removeItem = (index) => {
     setFormState((current) => ({
       ...current,
@@ -196,6 +243,7 @@ function ContractsPage() {
     }));
   };
 
+  // Sends a transaction to update the fulfillment status of a contract on-chain
   const updateFulfillmentStatus = async (orderAddress, newStatus) => {
     try {
       if (!window.ethereum) throw new Error("No wallet found");
@@ -220,7 +268,8 @@ function ContractsPage() {
     }
   };
 
-    const updatePaymentStatus = async (orderAddress, newStatus) => {
+  // Sends a transaction to update the payment status of a contract on-chain
+  const updatePaymentStatus = async (orderAddress, newStatus) => {
     try {
       if (!window.ethereum) throw new Error("No wallet found");
 
@@ -244,6 +293,8 @@ function ContractsPage() {
     }
   };
 
+  // Validates form input, ensures the selected business is registered on-chain,
+  // and deploys a new contract via the factory using the admin wallet
   const createContract = async () => {
     
     if (!selectedBusiness) {
@@ -265,13 +316,6 @@ function ContractsPage() {
       setCreateStatus("Add at least one contract item.");
       return;
     }
-
-    console.log("CREATE DEBUG", {
-  wallet: selectedBusiness.wallet_address,
-  names: cleanedItems.map(i => i.name),
-  prices: cleanedItems.map(i => Number(i.price)),
-  quantities: cleanedItems.map(i => i.quantity),
-});
 
     const invalidItem = cleanedItems.find(
       (item) =>
@@ -323,11 +367,7 @@ function ContractsPage() {
         await registerTx.wait();
       }
 
-      const wallet_address = await registry.getBusinessByName(
-          selectedBusiness.business_name
-        );
-
-        console.log("Resolved wallet_address:", wallet_address);
+      const wallet_address = selectedBusiness.wallet_address;
 
       const createTx = await factory.createOrderContract(
         wallet_address,
@@ -428,8 +468,9 @@ function ContractsPage() {
           <TextField
             select
             fullWidth
+            id="business-select"
             label="Assign to business"
-            value={formState.businessWallet}
+            value={formState.businessWallet ?? ""}
             onChange={(event) => updateForm("businessWallet", event.target.value)}
             sx={{ mt: 3 }}
             helperText={
@@ -439,7 +480,7 @@ function ContractsPage() {
             }
           >
             {businesses.map((business) => (
-              <MenuItem key={business.id} value={business.wallet_address}>
+              <MenuItem key={business.id} value={business.wallet_address || ""}>
                 {business.business_name} ({business.wallet_address})
               </MenuItem>
             ))}
@@ -469,6 +510,7 @@ function ContractsPage() {
               <Paper key={index} variant="outlined" sx={{ p: 2 }}>
                 <Stack spacing={2}>
                   <TextField
+                    id={`item-name-${index}`}
                     fullWidth
                     label={`Item ${index + 1} name`}
                     value={item.name}
@@ -476,7 +518,9 @@ function ContractsPage() {
                       updateItem(index, "name", event.target.value)
                     }
                   />
+
                   <TextField
+                    id={`item-quantity-${index}`}
                     fullWidth
                     label="Quantity"
                     value={item.quantity}
@@ -484,7 +528,9 @@ function ContractsPage() {
                       updateItem(index, "quantity", event.target.value)
                     }
                   />
+
                   <TextField
+                    id={`item-price-${index}`}
                     fullWidth
                     type="number"
                     label="Price"
@@ -547,16 +593,6 @@ function ContractsPage() {
       ) : (
         <Stack spacing={2}>
           {contracts.map((contract, index) => {
-            
-            const provider = getWalletProvider();
-
-            const registry = new ethers.Contract(
-              businessRegistryAddress,
-              businessRegistryABI,
-              provider
-            );
-            const business = registry.getBusinessByAddress(contract.businessAddress);
-
             return (
               <Paper key={contract.id} sx={{ p: 3 }}>
                 <Typography variant="h6">Contract #{index + 1}</Typography>
@@ -567,7 +603,7 @@ function ContractsPage() {
                   Assigned wallet: {contract.businessAddress}
                 </Typography>
                 <Typography variant="body2">
-                  Business: {business?.name || "Not found in backend DB"}
+                  Business: {contract.businessName || "Not found"}
                 </Typography>
                 <Typography variant="body2">
                   Payment status: {contract.paymentStatus ? "Paid" : "Unpaid"}
@@ -589,6 +625,9 @@ function ContractsPage() {
                           contract.itemPrices[itemIndex]
                         )}`}
                       />
+                    </ListItem>
+                  ))}
+                     {accessMode === ACCESS_MODES.GOVERNMENT && (
                       <Stack direction="row" spacing={2}>
                         <Button
                           variant="contained"
@@ -600,8 +639,9 @@ function ContractsPage() {
                             )
                           }
                         >
-                          {contract.paymentStatus ? "Mark Unpayed" : "Mark Payed"}
+                          {contract.paymentStatus ? "Mark Unpaid" : "Mark Paid"}
                         </Button>
+
                         <Button
                           variant="contained"
                           color={contract.fulfillmentStatus ? "warning" : "success"}
@@ -615,8 +655,7 @@ function ContractsPage() {
                           {contract.fulfillmentStatus ? "Mark Unfulfilled" : "Mark Fulfilled"}
                         </Button>
                       </Stack>
-                    </ListItem>
-                  ))}
+                    )}
                 </List>
               </Paper>
             );

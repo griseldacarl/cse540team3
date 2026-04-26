@@ -20,8 +20,6 @@ import {
 } from "@mui/material";
 
 function BusinessRegistry() {
-  // Admin state (future use)
-  const [isAdmin, setIsAdmin] = useState(false);
 
   // Search state
   const [searchParam, setSearchParam] = useState("");

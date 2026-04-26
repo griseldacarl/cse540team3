@@ -4,22 +4,14 @@ import { ethers } from "ethers";
 // Contract config
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
-import { businessRegistryAddress } from "../GovernmentABI/businessRegistryAddress";
-import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI";
 
 import ContractsPage from "./ContractsPage";
 import BusinessRegistry from "./BusinessRegistry";
 
 // MUI components
 import {
-  Paper,
   Box,
   Typography,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Drawer,
   Divider,
   List,
@@ -46,7 +38,6 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-  Title,
 } from "chart.js";
 import { Pie, Bar } from "react-chartjs-2";
 
@@ -62,32 +53,16 @@ ChartJS.register(
 const drawerWidth = 240;
 
 function Main() {
-  // =========================
-  // WALLET / BASIC STATE
-  // =========================
-  const [walletAddress, setWalletAddress] = useState("");
-  const [orderAddresses, setOrderAddresses] = useState([]);
-  const [statusMessage, setStatusMessage] = useState("Not connected");
-  const [networkInfo, setNetworkInfo] = useState("");
-
-  const [businessData, setBusinessData] = useState([]);
-  const [dbStatus, setDbStatus] = useState("");
 
   const [walletColor, setwalletColor] = useState("Red");
   const [blockColor, setblockColor] = useState("Red");
   const [dbColor, setDbColor] = useState("Red");
 
-  const [selectedIndex, setSelectedIndex] = useState(3);
+  const [selectedIndex, setSelectedIndex] = useState(2);
 
   const [uniqueBusinesses, setUniqueBusinesses] = useState([]);
   const [bizTypeData, setBizTypeData] = useState(null);
   const [approveBizData, setBizApproveData] = useState(null);
-
-  // =========================
-  // ORDER DETAIL STATE
-  // =========================
-  const [order, setOrder] = useState(null);
-  const [selectedBusiness, setSelectedBusiness] = useState(null);
 
   // =========================
   // CONTRACT STATE (ADDED)
@@ -122,7 +97,6 @@ function Main() {
       setwalletColor("Green");
 
       const network = await provider.getNetwork();
-      setNetworkInfo(`${network.name} (${network.chainId})`);
       setblockColor("Green");
     } catch {}
   };
@@ -251,7 +225,18 @@ function Main() {
 
     setBizTypeData({
       labels: Object.keys(counts),
-      datasets: [{ data: Object.values(counts) }],
+      datasets: [
+        {
+          data: Object.values(counts),
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.5)",
+            "rgba(54, 162, 235, 0.5)",
+            "rgba(255, 206, 86, 0.5)",
+            "rgba(75, 192, 192, 0.5)",
+            "rgba(153, 102, 255, 0.5)",
+          ],
+        },
+      ],
     });
   };
 
@@ -267,7 +252,15 @@ function Main() {
 
     setBizApproveData({
       labels: ["Approved", "Pending"],
-      datasets: [{ data: [counts.Approved, counts.Pending] }],
+      datasets: [
+        {
+          data: [counts.Approved, counts.Pending],
+          backgroundColor: [
+            "rgba(75, 192, 192, 0.5)", // Approved
+            "rgba(255, 99, 132, 0.5)", // Pending
+          ],
+        },
+      ],
     });
   };
 
@@ -282,7 +275,7 @@ function Main() {
     <Box sx={{ display: "flex" }}>
       <Drawer variant="permanent" sx={{ width: drawerWidth }}>
         <List>
-          {["Business Registry", "Contracts", "Stats", "Debug"].map(
+          {["Business Registry", "Contracts", "Stats"].map(
             (text, i) => (
               <ListItem key={text} disablePadding>
                 <ListItemButton
@@ -306,6 +299,47 @@ function Main() {
             )
           )}
         </List>
+        <Box sx={{ flexGrow: 1 }} />
+
+    <Divider sx={{ my: 2, width: "80%", alignSelf: "center" }} />
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 1,
+          pb: 2,
+        }}
+      >
+        <Typography sx={{ fontWeight: 600 }}>
+          Connection Status
+        </Typography>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: 1,
+          }}
+        >
+          <Typography sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <CircleIcon sx={{ color: walletColor }} />
+            Wallet
+          </Typography>
+
+          <Typography sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <CircleIcon sx={{ color: blockColor }} />
+            Blockchain
+          </Typography>
+
+          <Typography sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <CircleIcon sx={{ color: dbColor }} />
+            Database
+          </Typography>
+        </Box>
+      </Box>
       </Drawer>
 
       {/* ================= CONTRACT + BUSINESS STATS (COMBINED) ================= */}
