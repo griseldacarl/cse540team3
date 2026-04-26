@@ -34,10 +34,10 @@ contract OrderFactory is OrderBase {
      */
     function createOrderContract(address BusinessAddress,string[] memory itemNames, uint256[] memory itemPrices, string[] memory itemQuantities) public returns (address) {
             require(msg.sender == admin, "Only admin can call this function");
-            OrderContract  newContract = new OrderContract(BusinessAddress, itemNames, itemPrices, itemQuantities);
+            OrderContract  newContract = new OrderContract(msg.sender, BusinessAddress, itemNames, itemPrices, itemQuantities);
             orderContracts.push(address(newContract));
             businessOrders[BusinessAddress].push(address(newContract));
-            emit OrderContractCreated(BusinessAddress, address(newContract));
+            emit OrderContractCreated( BusinessAddress, address(newContract));
             return address(newContract);
     }
 

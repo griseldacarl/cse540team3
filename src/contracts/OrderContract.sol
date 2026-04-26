@@ -38,9 +38,9 @@ contract OrderContract is OrderBase {
      * Parameters: _businessAddress, itemNames, itemPrices, itemQuantities
      * Returns: None
      */
-    constructor(address _businessAddress,string[] memory itemNames, uint[] memory itemPrices, string[] memory itemQuantities) {
+    constructor(address sender, address _businessAddress,string[] memory itemNames, uint[] memory itemPrices, string[] memory itemQuantities) {
         // deployer is admin
-        admin = msg.sender;
+        admin = sender;
         require(_businessAddress != address(0), "Invalid business address");
         businessAddress = _businessAddress;
         paymentStatus = false;
