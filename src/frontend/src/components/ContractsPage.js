@@ -12,6 +12,7 @@ import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { FormControl, InputLabel, Select } from '@mui/material';
 import { orderFactoryAddress } from "../GovernmentABI/orderFactoryAddress";
 import { orderFactoryABI } from "../GovernmentABI/orderFactoryABI";
 import { contractGovernmentABI } from "../GovernmentABI/contractGovernmentABI";
@@ -21,6 +22,7 @@ import { businessRegistryABI } from "../GovernmentABI/businessRegistryABI";
 const ACCESS_MODES = {
   PUBLIC: "public",
   GOVERNMENT: "government",
+  BUSINESS: "business"
 };
 
 const READ_ONLY_RPC_URL = "http://127.0.0.1:8545";
@@ -90,6 +92,10 @@ function ContractsPage() {
     }
 
     return number.toLocaleString();
+  };
+
+  const handleModeChange = (event) => {
+    setAccessMode(event.target.value)
   };
 
   // Loads businesses from the backend API and enriches each with its on-chain wallet address
@@ -408,25 +414,20 @@ function ContractsPage() {
           </Typography>
         </Box>
 
-        <FormControlLabel
-          control={
-            <Switch
-              checked={accessMode === ACCESS_MODES.GOVERNMENT}
-              onChange={(event) =>
-                setAccessMode(
-                  event.target.checked
-                    ? ACCESS_MODES.GOVERNMENT
-                    : ACCESS_MODES.PUBLIC
-                )
-              }
-            />
-          }
-          label={
-            accessMode === ACCESS_MODES.GOVERNMENT
-              ? "Government mode"
-              : "Public mode"
-          }
-        />
+        <FormControl>
+          <InputLabel>Mode</InputLabel>
+          <Select
+            value={accessMode}
+            label="Mode"
+            onChange={handleModeChange}
+          >
+            <MenuItem value={"public"}>Public</MenuItem>
+            <MenuItem value={"government"}>Goverment</MenuItem>
+            <MenuItem value={"business"}>Business</MenuItem>
+          </Select>
+        </FormControl>
+
+
       </Stack>
 
       <Stack
@@ -627,8 +628,9 @@ function ContractsPage() {
                       />
                     </ListItem>
                   ))}
-                     {accessMode === ACCESS_MODES.GOVERNMENT && (
+                     {(accessMode === ACCESS_MODES.GOVERNMENT || accessMode == ACCESS_MODES.BUSINESS) && (
                       <Stack direction="row" spacing={2}>
+                        {accessMode === ACCESS_MODES.GOVERNMENT &&
                         <Button
                           variant="contained"
                           color={contract.paymentStatus ? "warning" : "success"}
@@ -641,6 +643,7 @@ function ContractsPage() {
                         >
                           {contract.paymentStatus ? "Mark Unpaid" : "Mark Paid"}
                         </Button>
+                        }
 
                         <Button
                           variant="contained"
