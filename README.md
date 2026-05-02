@@ -113,6 +113,9 @@ npm run dev
 # Start frontend only
 cd src/frontend
 npm start
+
+#Run Unit Tests
+npx hardhat test
 ```
 
 ## Wallet Setup
